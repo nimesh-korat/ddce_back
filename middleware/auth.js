@@ -20,7 +20,7 @@ const checkAuth = async (req, res, next) => {
 
         // Check if the token ID exists and is still active in the database
         const sql = "SELECT * FROM sessions WHERE token_id = ? AND status = 'active' AND expires_at > NOW()";
-        const [session] = await pool.promise().query(sql, [tokenId]);
+        const [session] = await pool.promise().query(sql, [token]); //changed from tokenId to token for temperory
 
         if (session.length === 0) {
             return res.status(401).json({ success: false, message: "Session expired or revoked" });

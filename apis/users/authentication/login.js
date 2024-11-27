@@ -60,7 +60,7 @@ async function LoginUser(req, res) {
     const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // Token expires in 12 hours
 
     const sqlInsertSession = "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, ?)";
-    await pool.promise().query(sqlInsertSession, [tokenId, user.Id, expiresAt]);
+    await pool.promise().query(sqlInsertSession, [token, user.Id, expiresAt]); //changed from tokenId to token for temperory
 
     // Send JWT token and tokenId as cookie
     res.cookie("token_id", tokenId, {
