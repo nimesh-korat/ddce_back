@@ -8,7 +8,7 @@ async function registrationNotification(req, res) {
         Name, 
         College_Name, 
         registration_time
-      FROM Users 
+      FROM users 
       ORDER BY registration_time ASC
     `;
 
