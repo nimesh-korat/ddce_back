@@ -1,15 +1,18 @@
 const pool = require("../../../db/dbConnect");
 
 async function LogoutUser(req, res) {
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+    console.log(req.header("Authorization"));
+    
     const tokenId = req.cookies.token_id; // Get token ID from cookie
-    if (!tokenId) {
+    if (!tokenId && !token) {
         return res.status(400).json({ success: false, message: "No active session" });
     }
 
     try {
         // Mark the session as revoked in the database
         const sqlUpdateSession = "UPDATE sessions SET status = 'revoked' WHERE token_id = ?";
-        await pool.promise().query(sqlUpdateSession, [tokenId]);
+        await pool.promise().query(sqlUpdateSession, [token]); //changed from tokenId to token for temperory
 
         // Remove the token_id cookie from the client
         res.clearCookie("token_id", { httpOnly: true, secure: process.env.NODE_ENV === "production" });

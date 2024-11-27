@@ -46,6 +46,8 @@ async function LoginUser(req, res) {
     const [activeSessions] = await pool.promise().query(sqlCheckActiveSessions, [user.Id]);
 
     if (activeSessions.length >= 2) {
+      console.log("Two sessions already active for user:", activeSessions);
+      
       return res.status(403).json({
         success: false,
         message: "You can only be logged in on two devices simultaneously. Please log out from one device to log in to a new device.",
