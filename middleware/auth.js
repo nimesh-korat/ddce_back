@@ -6,7 +6,7 @@ const checkAuth = async (req, res, next) => {
     const tokenId = req.cookies.token_id; // Get token ID from cookie
     const token = req.header("Authorization")?.replace("Bearer ", ""); // Get token from Authorization header
 
-    if (!tokenId || !token) {
+    if (!tokenId && !token) {
         return res.status(401).json({ success: false, message: "Unauthorized access" });
     }
 
