@@ -25,7 +25,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-    origin: ["http://localhost:3000", "http://192.168.0.15:3000"],
+    origin: ["http://localhost:3000", "http://192.168.0.15:3000", process.env.FRONTEND_URL],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"]
 }));
@@ -48,6 +48,6 @@ app.get("/getRecentRegNotifications", registrationNotification)
 
 
 //?activate server
-app.listen(PORT,'0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log("Server Started on port: ", PORT);
 });
