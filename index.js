@@ -30,7 +30,6 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"]
 }));
 
-
 app.post("/signup_s1", SignupUser_s1);
 app.post("/signup_s2", SignupUser_s2);
 app.post("/login", LoginUser);

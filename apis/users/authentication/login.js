@@ -40,14 +40,21 @@ async function LoginUser(req, res) {
     if (!isPasswordValid) {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
+    // Update expired sessions
+    const sqlUpdateExpiredSessions = `
+    UPDATE sessions 
+    SET status = 'revoked'
+    WHERE user_id = ? 
+    AND status = 'active' 
+    AND expires_at <= NOW()`;
+    await pool.promise().query(sqlUpdateExpiredSessions, [user.Id]);
 
     // Check how many active sessions the user already has
     const sqlCheckActiveSessions = "SELECT * FROM sessions WHERE user_id = ? AND status = 'active' AND expires_at > NOW()";
     const [activeSessions] = await pool.promise().query(sqlCheckActiveSessions, [user.Id]);
 
     if (activeSessions.length >= 2) {
-      console.log("Two sessions already active for user:", activeSessions);
-      
+
       return res.status(403).json({
         success: false,
         message: "You can only be logged in on two devices simultaneously. Please log out from one device to log in to a new device.",
@@ -59,16 +66,16 @@ async function LoginUser(req, res) {
 
     // Store the token in the sessions table
     const tokenId = uuidv4();
-    const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // Token expires in 12 hours
+    const expiresAt = new Date(Date.now() + 1 * 60 * 1000); // Token expires in 12 hours 12 * 60 * 60 * 1000
 
-    const sqlInsertSession = "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, ?)";
+    const sqlInsertSession = "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 1 MINUTE)";
     await pool.promise().query(sqlInsertSession, [token, user.Id, expiresAt]); //changed from tokenId to token for temperory
 
     // Send JWT token and tokenId as cookie
     res.cookie("token_id", tokenId, {
-      httpOnly: true,
+      // httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Set to true in production for HTTPS
-      maxAge: 12 * 60 * 60 * 1000, // Same expiration as JWT (12 hours)
+      maxAge: 1 * 60 * 1000, // Same expiration as JWT (12 hours)
     });
 
     return res.status(200).json({
