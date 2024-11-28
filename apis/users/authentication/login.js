@@ -46,11 +46,11 @@ async function LoginUser(req, res) {
     SET status = 'revoked'
     WHERE user_id = ? 
     AND status = 'active' 
-    AND expires_at <= NOW()`;
+    AND expires_at <= UTC_TIMESTAMP()`;
     await pool.promise().query(sqlUpdateExpiredSessions, [user.Id]);
 
     // Check how many active sessions the user already has
-    const sqlCheckActiveSessions = "SELECT * FROM sessions WHERE user_id = ? AND status = 'active' AND expires_at > NOW()";
+    const sqlCheckActiveSessions = "SELECT * FROM sessions WHERE user_id = ? AND status = 'active' AND expires_at > UTC_TIMESTAMP()";
     const [activeSessions] = await pool.promise().query(sqlCheckActiveSessions, [user.Id]);
 
     if (activeSessions.length >= 2) {

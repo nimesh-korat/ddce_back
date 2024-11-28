@@ -15,6 +15,9 @@ const { verifyResetPassOtp } = require("./apis/users/authentication/reset_passwo
 const { resetPassword } = require("./apis/users/authentication/reset_password/reset_password");
 const Session = require("./apis/session");
 const { registrationNotification } = require("./apis/users/notifications/registration_notification");
+const { getSubjects } = require("./apis/admin/getSubjects");
+const { getTopic } = require("./apis/admin/getTopic");
+const { getSubTopic } = require("./apis/admin/getSubTopic");
 require('dotenv').config();
 
 const app = express();
@@ -44,6 +47,10 @@ app.post("/logout", checkAuth, LogoutUser);
 app.post("/session", checkAuth, Session);
 
 app.get("/getRecentRegNotifications", registrationNotification)
+app.get("/getSubjects", getSubjects);
+app.post("/getTopics", getTopic);
+app.post("/getSubTopics", getSubTopic);
+
 
 
 //?activate server
