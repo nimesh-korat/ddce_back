@@ -9,7 +9,7 @@ async function registrationNotification(req, res) {
         College_Name, 
         registration_time
       FROM users 
-      ORDER BY registration_time ASC
+      ORDER BY registration_time DESC
     `;
 
     // Execute the query using the connection pool
