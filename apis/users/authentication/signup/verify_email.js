@@ -32,7 +32,7 @@ async function verifyEmail(req, res) {
 
         // Check if OTP has expired
         if (new Date() > new Date(otpExpiresAt)) {
-            return res.status(400).json({ success: false, message: "OTP has expired" });
+            return res.status(400).json({ success: false, message: "OTP Has Expired" });
         }
 
         // If valid, update Email_Verified to 1
@@ -44,7 +44,7 @@ async function verifyEmail(req, res) {
 
         const [updateResult] = await pool.promise().query(sqlUpdate, [Email_Id]);
 
-        return res.status(200).json({ success: true, message: "Email verified successfully" });
+        return res.status(200).json({ success: true, message: "Email Verified Successfully" });
     } catch (err) {
         console.error("Error verifying email:", err.message);
         return res.status(500).json({ success: false, error: "Database error", details: err.message });

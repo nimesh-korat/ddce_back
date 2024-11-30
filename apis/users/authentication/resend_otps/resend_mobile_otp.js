@@ -24,7 +24,7 @@ async function resendMobileOTP(req, res) {
 
         // If phone number is already verified, do not resend OTP
         if (user[0].Phone_Verified === 1) {
-            return res.status(400).json({ success: false, message: "Phone number is already verified. OTP cannot be resent." });
+            return res.status(400).json({ success: false, message: "Phone Number Is Already Verified." });
         }
 
         // Generate a new OTP
@@ -52,7 +52,7 @@ async function resendMobileOTP(req, res) {
             const [results] = await pool.promise().query(sqlUpdate, [newMobileOTP, otpExpiresAt, Phone_Number]);
 
             if (results.affectedRows === 0) {
-                return res.status(404).json({ success: false, message: "Phone number not found" });
+                return res.status(404).json({ success: false, message: "Phone Number Not Found" });
             }
 
             return res.status(200).json({

@@ -19,7 +19,7 @@ const checkAuth = async (req, res, next) => {
         }
 
         // Check if the token ID exists and is still active in the database
-        const sql = "SELECT * FROM sessions WHERE token_id = ? AND status = 'active' AND expires_at > NOW()";
+        const sql = "SELECT * FROM sessions WHERE token_id = ? AND status = 'active' AND expires_at > UTC_TIMESTAMP()";
         const [session] = await pool.promise().query(sql, [token]); //changed from tokenId to token for temperory
 
         if (session.length === 0) {

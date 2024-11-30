@@ -15,7 +15,7 @@ async function verifyResetPassOtp(req, res) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        const sql = "SELECT * FROM password_resets WHERE user_id = ? AND otp = ? AND expires_at > NOW()";
+        const sql = "SELECT * FROM password_resets WHERE user_id = ? AND otp = ? AND expires_at > UTC_TIMESTAMP()";
         const [results] = await pool.promise().query(sql, [user[0].Id, otp]);
 
         if (results.length === 0) {

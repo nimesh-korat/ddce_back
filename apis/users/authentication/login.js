@@ -30,7 +30,7 @@ async function LoginUser(req, res) {
     if (!user.Phone_Verified) {
       return res.status(403).json({
         success: false,
-        message: "Account not verified. Please verify your email and phone number.",
+        message: "Account not verified. Please verify your phone number.",
       });
     }
 
@@ -38,7 +38,7 @@ async function LoginUser(req, res) {
     const isPasswordValid = await bcrypt.compare(Password, user.Password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
+      return res.status(401).json({ success: false, message: "Invalid Phone or password" });
     }
     // Update expired sessions
     const sqlUpdateExpiredSessions = `
@@ -50,14 +50,20 @@ async function LoginUser(req, res) {
     await pool.promise().query(sqlUpdateExpiredSessions, [user.Id]);
 
     // Check how many active sessions the user already has
-    const sqlCheckActiveSessions = "SELECT * FROM sessions WHERE user_id = ? AND status = 'active' AND expires_at > UTC_TIMESTAMP()";
+    const sqlCheckActiveSessions = `
+  SELECT * 
+  FROM sessions 
+  WHERE user_id = ? 
+  AND status = 'active' 
+  AND expires_at > UTC_TIMESTAMP()
+`;
     const [activeSessions] = await pool.promise().query(sqlCheckActiveSessions, [user.Id]);
 
     if (activeSessions.length >= 2) {
 
       return res.status(403).json({
         success: false,
-        message: "You can only be logged in on two devices simultaneously. Please log out from one device to log in to a new device.",
+        message: "You can only be logged in on two devices simultaneously.",
       });
     }
 
@@ -66,16 +72,16 @@ async function LoginUser(req, res) {
 
     // Store the token in the sessions table
     const tokenId = uuidv4();
-    const expiresAt = new Date(Date.now() + 1 * 60 * 1000); // Token expires in 12 hours 12 * 60 * 60 * 1000
+    const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // Token expires in 12 hours 12 * 60 * 60 * 1000
 
-    const sqlInsertSession = "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 1 MINUTE)";
+    const sqlInsertSession = "INSERT INTO sessions (token_id, user_id,  expires_at) VALUES (?, ?,  UTC_TIMESTAMP() + INTERVAL 12 HOUR)";
     await pool.promise().query(sqlInsertSession, [token, user.Id, expiresAt]); //changed from tokenId to token for temperory
 
     // Send JWT token and tokenId as cookie
     res.cookie("token_id", tokenId, {
-      // httpOnly: true,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Set to true in production for HTTPS
-      maxAge: 1 * 60 * 1000, // Same expiration as JWT (12 hours)
+      maxAge: 12 * 60 * 60 * 1000, // Same expiration as JWT (12 hours)
     });
 
     return res.status(200).json({

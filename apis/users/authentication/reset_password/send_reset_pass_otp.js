@@ -26,7 +26,7 @@ async function send_reset_pass_otp(req, res) {
         const deleteExpiredOtpQuery = `
             DELETE FROM password_resets 
             WHERE user_id = ? AND method = ? 
-            AND expires_at < (NOW() - INTERVAL 1 MINUTE  - INTERVAL 30 SECOND)
+            AND expires_at < (UTC_TIMESTAMP() - INTERVAL 1 MINUTE  - INTERVAL 30 SECOND)
         `;
         await pool.promise().query(deleteExpiredOtpQuery, [user[0].Id, method]);
 
@@ -39,7 +39,7 @@ async function send_reset_pass_otp(req, res) {
         const [existingOtp] = await pool.promise().query(checkExistingOtpQuery, [user[0].Id, method]);
 
         if (existingOtp.length > 0) {
-            return res.status(400).json({ success: false, message: `An unexpired OTP already exists for this ${method}` });
+            return res.status(400).json({ success: false, message: `OTP Already Sent via SMS!` });
         }
 
         if (method === "email") {
@@ -62,7 +62,7 @@ async function send_reset_pass_otp(req, res) {
             const expiresAt = new Date(Date.now() + (1 * 60 * 1000) + (30 * 1000)); // 1 minute and 30 seconds
 
             await pool.promise().query(sql, [user[0].Id, otp, method]);
-            return res.status(200).json({ success: true, message: `OTP sent successfully via ${method}` });
+            return res.status(200).json({ success: true, message: `OTP Sent Successfully via SMS!` });
         } else {
             return res.status(500).json({ success: false, message: "Failed to deliver OTP" });
         }

@@ -18,6 +18,10 @@ const { registrationNotification } = require("./apis/users/notifications/registr
 const { getSubjects } = require("./apis/admin/getSubjects");
 const { getTopic } = require("./apis/admin/getTopic");
 const { getSubTopic } = require("./apis/admin/getSubTopic");
+const { LoginAdmin } = require("./apis/admin/authentication.js/login");
+const { AddQuestions } = require("./apis/admin/questions/addQuestions");
+const uploadQuestionImage = require("./middleware/multer");
+const { getQuestions } = require("./apis/admin/questions/getQuestions");
 require('dotenv').config();
 
 const app = express();
@@ -33,6 +37,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"]
 }));
 
+//!User APIs
 app.post("/signup_s1", SignupUser_s1);
 app.post("/signup_s2", SignupUser_s2);
 app.post("/login", LoginUser);
@@ -45,11 +50,22 @@ app.post("/verify_reset_pass_otp", verifyResetPassOtp);
 app.post("/reset_password", resetPassword);
 app.post("/logout", checkAuth, LogoutUser);
 app.post("/session", checkAuth, Session);
-
 app.get("/getRecentRegNotifications", registrationNotification)
+
+//!Admin APIs
+app.post("/admin/login", LoginAdmin);
+app.post("/admin/addQuestion", uploadQuestionImage.fields([
+    { name: "question_image", maxCount: 1 },
+    { name: "option_a_image", maxCount: 1 },
+    { name: "option_b_image", maxCount: 1 },
+    { name: "option_c_image", maxCount: 1 },
+    { name: "option_d_image", maxCount: 1 },
+    { name: "answer_image", maxCount: 1 }
+]), AddQuestions)
 app.get("/getSubjects", getSubjects);
 app.post("/getTopics", getTopic);
 app.post("/getSubTopics", getSubTopic);
+app.get("/api/questions", getQuestions);
 
 
 

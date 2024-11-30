@@ -23,7 +23,7 @@ async function resetPassword(req, res) {
         const sql = "UPDATE users SET Password = ? WHERE Id = ?";
         await pool.promise().query(sql, [hashedPassword, user[0].Id]);
 
-        return res.status(200).json({ success: true, message: "Password reset successfully" });
+        return res.status(200).json({ success: true, message: "Password Reset Successfully" });
     } catch (err) {
         console.error("Error during password reset:", err.message);
         return res.status(500).json({ success: false, message: "Internal server error", details: err.message });
