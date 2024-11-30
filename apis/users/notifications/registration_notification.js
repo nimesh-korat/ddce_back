@@ -7,7 +7,7 @@ async function registrationNotification(req, res) {
       SELECT 
         Name, 
         College_Name, 
-        registration_time
+         DATE_FORMAT(registration_time, '%Y-%m-%d %H:%i:%s') AS registration_time
       FROM users 
       ORDER BY registration_time DESC
     `;
