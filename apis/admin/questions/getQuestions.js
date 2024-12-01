@@ -23,10 +23,23 @@ async function getQuestions(req, res) {
 
         // Query to fetch paginated questions
         const sql = `
-            SELECT question_text, option_a_text, option_b_text, option_c_text, option_d_text, answer_text
-            FROM tbl_questions
-            LIMIT ? OFFSET ?
-        `;
+    WITH ranked_questions AS (
+        SELECT 
+            question_text, 
+            option_a_text, 
+            option_b_text, 
+            option_c_text, 
+            option_d_text, 
+            answer_text, 
+            tbl_subtopic,
+            ROW_NUMBER() OVER (PARTITION BY tbl_subtopic ORDER BY id) AS subtopic_rank
+        FROM tbl_questions
+    )
+    SELECT *
+    FROM ranked_questions
+    ORDER BY subtopic_rank, tbl_subtopic
+    LIMIT ? OFFSET ?;
+`;
         const [results] = await pool.promise().query(sql, [limit, offset]);
 
         // Calculate pagination metadata
