@@ -86,6 +86,8 @@ async function addStudentAnswer(req, res) {
                 obt_marks = -test_neg_marks;
             }
 
+            console.log("Attempt Status:", attempt_status);
+
             // Insert the student's answer into the database
             const sql = `
                 INSERT INTO tbl_student_answer (
@@ -109,7 +111,7 @@ async function addStudentAnswer(req, res) {
                 correct_answer,
                 is_correct,
                 obt_marks,
-                attempt_status,
+                attempt_status
             ];
 
             const [insertResult] = await pool.promise().query(sql, values);
