@@ -17,9 +17,9 @@ async function addStudentAnswer(req, res) {
         const results = [];
 
         for (const answer of answers) {
-            const { question_id, std_answer, attempt_status } = answer;
+            const { question_id, std_answer, attempt_status: rawAttemptStatus } = answer;
 
-            if (!question_id || !attempt_status) {
+            if (!question_id || !rawAttemptStatus) {
                 results.push({ success: false, message: "Missing question_id or attempt_status", question_id });
                 continue;
             }
@@ -71,11 +71,14 @@ async function addStudentAnswer(req, res) {
 
             const { test_neg_marks } = testResult[0];
 
+            // Set the attempt status to 1 (even if the user has skipped the question)
+            const attempt_status = "1"; // Always set attempt_status to "1"
+
             // Determine correctness and obtained marks based on the answer
             let is_correct;
             let obt_marks;
 
-            if (attempt_status === "skipped") {
+            if (rawAttemptStatus === "skipped") {
                 is_correct = "2"; // 2 for skipped
                 obt_marks = 0;
             } else if (std_answer === answer_text || std_answer === answer_image) {
@@ -86,7 +89,7 @@ async function addStudentAnswer(req, res) {
                 obt_marks = -test_neg_marks;
             }
 
-            console.log("Attempt Status:", attempt_status);
+            console.log("Attempt Status:", rawAttemptStatus);
 
             // Insert the student's answer into the database
             const sql = `
@@ -111,7 +114,7 @@ async function addStudentAnswer(req, res) {
                 correct_answer,
                 is_correct,
                 obt_marks,
-                attempt_status
+                attempt_status // Always set attempt_status to "1"
             ];
 
             const [insertResult] = await pool.promise().query(sql, values);
