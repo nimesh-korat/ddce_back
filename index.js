@@ -20,8 +20,18 @@ const { getTopic } = require("./apis/admin/getTopic");
 const { getSubTopic } = require("./apis/admin/getSubTopic");
 const { LoginAdmin } = require("./apis/admin/authentication.js/login");
 const { AddQuestions } = require("./apis/admin/questions/addQuestions");
-const uploadQuestionImage = require("./middleware/multer");
+const { uploadQuestionImage, uploadTestImage } = require("./middleware/multer");
 const { getQuestions } = require("./apis/admin/questions/getQuestions");
+const { getQuestionsById } = require("./apis/admin/questions/getQuestionsById");
+const { addTest } = require("./apis/admin/quiz/addTest");
+const { addTestQuestions } = require("./apis/admin/quiz/addTestQuestions");
+const { addStudentAnswer } = require("./apis/admin/quiz/addStudentAnswer");
+const { addFinalResult } = require("./apis/admin/quiz/addFinalResult");
+const { getQuestionsForTest } = require("./apis/admin/quiz/getQuestionForTest");
+const { getActiveTests } = require("./apis/admin/quiz/getActiveTest");
+const { getTestQuestions } = require("./apis/admin/quiz/getTestQuestions");
+const { getResultByStudent } = require("./apis/admin/quiz/getResultByStudent");
+const { getActiveTestsForStudent } = require("./apis/admin/quiz/getActiveTestForStudent");
 require('dotenv').config();
 
 const app = express();
@@ -32,10 +42,12 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-    origin: ["http://localhost:3000", "http://192.168.0.15:3000", process.env.FRONTEND_URL],
+    origin: ["http://localhost:3000", "http://192.168.0.19:3000", process.env.FRONTEND_URL],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"]
 }));
+app.use("/uploads/images/question_imgs", express.static("upload/images/question_imgs"));
+app.use("/uploads/images/test_images", express.static("uploads/images/test_images"));
 
 //!User APIs
 app.post("/signup_s1", SignupUser_s1);
@@ -54,22 +66,31 @@ app.get("/getRecentRegNotifications", registrationNotification)
 
 //!Admin APIs
 app.post("/admin/login", LoginAdmin);
-app.post("/admin/addQuestion", uploadQuestionImage.fields([
+app.post("/admin/addQuestion", checkAuth, uploadQuestionImage.fields([
     { name: "question_image", maxCount: 1 },
     { name: "option_a_image", maxCount: 1 },
     { name: "option_b_image", maxCount: 1 },
     { name: "option_c_image", maxCount: 1 },
     { name: "option_d_image", maxCount: 1 },
     { name: "answer_image", maxCount: 1 }
-]), AddQuestions)
+]), AddQuestions);
 app.get("/getSubjects", getSubjects);
 app.post("/getTopics", getTopic);
 app.post("/getSubTopics", getSubTopic);
-app.get("/api/questions", getQuestions);
+app.get("/admin/questions", getQuestions);
+app.post("/admin/getquestionsbyid", getQuestionsById);
 
-
+app.post("/admin/addTest", checkAuth, uploadTestImage.single("test_img_path"), addTest);
+app.post("/admin/addTestQuestions", checkAuth, addTestQuestions);
+app.post("/addStudentAnswer", checkAuth, addStudentAnswer);
+app.post("/addFinalResult", addFinalResult);
+app.post("/admin/getQuestionsForTest", checkAuth, getQuestionsForTest);
+app.get("/admin/getTests", getActiveTests);
+app.post("/getTest", checkAuth, getActiveTestsForStudent);
+app.post("/getTestQuestions", checkAuth, getTestQuestions);
+app.post("/getResultByStudent", checkAuth, getResultByStudent);
 
 //?activate server
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log("Server Started on port: ", PORT);
 });

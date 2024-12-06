@@ -12,9 +12,7 @@ async function LoginAdmin(req, res) {
         return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    const sql = "SELECT * FROM admin WHERE Email = ?"; // Query to fetch user by email
-    console.log(req.body);
-
+    const sql = "SELECT * FROM admin WHERE Email = ?";
 
     try {
 
@@ -65,14 +63,7 @@ async function LoginAdmin(req, res) {
         const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // Token expires in 12 hours 12 * 60 * 60 * 1000
 
         const sqlInsertSession = "INSERT INTO sessions (token_id, admin_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 12 HOUR)";
-        await pool.promise().query(sqlInsertSession, [token, admin.Id, expiresAt]); //changed from tokenId to token for temperory
-
-        // Send JWT token and tokenId as cookie
-        res.cookie("token_id", tokenId, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Set to true in production for HTTPS
-            maxAge: 12 * 60 * 60 * 1000, // Same expiration as JWT (12 hours)
-        });
+        await pool.promise().query(sqlInsertSession, [tokenId, admin.Id, expiresAt]); //changed from tokenId to token for temperory
 
         return res.status(200).json({
             success: true,
@@ -82,9 +73,12 @@ async function LoginAdmin(req, res) {
                 name: admin.Name,
                 phone: admin.Phone,
                 email: admin.Email,
-                role: "1"
+                role: admin.Role
             },
-            token: token, // Send the token in the response if needed
+            auth: {
+                token,
+                session: tokenId
+            },
         });
 
     } catch (err) {

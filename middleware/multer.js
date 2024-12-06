@@ -11,4 +11,18 @@ const storage = multer.diskStorage({
 });
 
 const uploadQuestionImage = multer({ storage });
-module.exports = uploadQuestionImage;
+
+// Configure multer to store files
+const storageTest = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./uploads/images/test_images/");
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    },
+});
+
+
+
+const uploadTestImage = multer({ storage: storageTest });
+module.exports = { uploadQuestionImage, uploadTestImage };

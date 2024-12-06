@@ -75,14 +75,13 @@ async function LoginUser(req, res) {
     const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // Token expires in 12 hours 12 * 60 * 60 * 1000
 
     const sqlInsertSession = "INSERT INTO sessions (token_id, user_id,  expires_at) VALUES (?, ?,  UTC_TIMESTAMP() + INTERVAL 12 HOUR)";
-    await pool.promise().query(sqlInsertSession, [token, user.Id, expiresAt]); //changed from tokenId to token for temperory
+    await pool.promise().query(sqlInsertSession, [tokenId, user.Id, expiresAt]);
 
-    // Send JWT token and tokenId as cookie
-    res.cookie("token_id", tokenId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Set to true in production for HTTPS
-      maxAge: 12 * 60 * 60 * 1000, // Same expiration as JWT (12 hours)
-    });
+    // res.cookie("token_id", tokenId, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production", // Set to true in production for HTTPS
+    //   maxAge: 12 * 60 * 60 * 1000, // Same expiration as JWT (12 hours)
+    // });
 
     return res.status(200).json({
       success: true,
@@ -109,7 +108,10 @@ async function LoginUser(req, res) {
         phone_verified: user.Phone_Verified,
         registration_time: user.registration_time
       },
-      token: token, // Send the token in the response if needed
+      auth: {
+        token,
+        session: tokenId
+      },
     });
 
   } catch (err) {
