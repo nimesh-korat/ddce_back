@@ -51,6 +51,8 @@ async function addTest(req, res) {
             added_by
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
+
+    const newTestDifficulty = test_difficulty === 'Easy' ? 0 : test_difficulty === 'Medium' ? 2 : test_difficulty === 'Hard' ? 3 : test_difficulty === 'Time Consuming' ? 4 : null;
     const values = [
         test_name,
         test_desc,
@@ -59,7 +61,7 @@ async function addTest(req, res) {
         formattedStartDate,
         formattedEndDate,
         test_duration,
-        test_difficulty,
+        newTestDifficulty,
         added_by
     ];
 
