@@ -3,6 +3,7 @@ const pool = require("../../../db/dbConnect");
 async function AddQuestions(req, res) {
     const {
         tbl_subtopic,
+        tbl_paragraph,
         question_text,
         option_a_text,
         option_b_text,
@@ -37,16 +38,17 @@ async function AddQuestions(req, res) {
     const option_d_image = req.files["option_d_image"] ? req.files["option_d_image"][0].filename : null;
     const answer_image = req.files["answer_image"] ? req.files["answer_image"][0].filename : null;
 
-    // If image options are provided, set text options to "1", "2", "3", "4"
-    const updatedOptionAText = option_a_image ? "1" : option_a_text || null;
-    const updatedOptionBText = option_b_image ? "2" : option_b_text || null;
-    const updatedOptionCText = option_c_image ? "3" : option_c_text || null;
-    const updatedOptionDText = option_d_image ? "4" : option_d_text || null;
+    // If image options are provided, set text options to "Option A", "Option B", "Option C", "Option D"
+    const updatedOptionAText = option_a_image ? "Option A" : option_a_text || null;
+    const updatedOptionBText = option_b_image ? "Option B" : option_b_text || null;
+    const updatedOptionCText = option_c_image ? "Option C" : option_c_text || null;
+    const updatedOptionDText = option_d_image ? "Option D" : option_d_text || null;
 
     // Prepare the SQL query for inserting a single question
     const sql = `
         INSERT INTO tbl_questions (
             tbl_subtopic,
+            tbl_paragraph,
             question_text,
             question_image,
             option_a_text,
@@ -62,12 +64,13 @@ async function AddQuestions(req, res) {
             question_marks,
             question_difficulty,
             added_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     // Values for the SQL query
     const values = [
         tbl_subtopic,
+        tbl_paragraph,
         question_text,
         question_image,
         updatedOptionAText,

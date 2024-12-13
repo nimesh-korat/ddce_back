@@ -21,8 +21,8 @@ async function addTestQuestions(req, res) {
         const checkSql = `
             SELECT question_id
             FROM tbl_test_questions
-            WHERE test_id = ? AND status = 'active'
-        `;
+            WHERE test_id = ? AND status = '0'
+        `; // Assuming '0' is the status for active questions
         const [existingQuestions] = await pool.promise().query(checkSql, [test_id]);
         const existingQuestionIds = existingQuestions.map((q) => q.question_id);
 
@@ -49,7 +49,7 @@ async function addTestQuestions(req, res) {
             test_id,
             question.q_id,
             added_by,
-            "active",
+            "0", // Assuming '0' is the status for active questions
         ]);
 
         // Step 4: Insert new questions into the database

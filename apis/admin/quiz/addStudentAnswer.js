@@ -24,21 +24,31 @@ async function addStudentAnswer(req, res) {
                 continue;
             }
 
+            //check if the sutudent result for this test already exists
+            const existsResultQuery = ` SELECT * FROM tbl_final_result WHERE test_id = ? AND std_id = ? `;
+
+            const [existingResult] = await pool.promise().query(existsResultQuery, [test_id, student_id]);
+
+            if (existingResult.length > 0) {
+                results.push({ success: false, message: "Test Already Submitted", question_id });
+                continue;
+            }
+
             // Check if the student's answer for this question and test already exists
             const checkQuery = `
                 SELECT id 
                 FROM tbl_student_answer 
                 WHERE test_id = ? AND question_id = ? AND student_id = ?
             `;
+
             const [existingAnswer] = await pool.promise().query(checkQuery, [test_id, question_id, student_id]);
 
             if (existingAnswer.length > 0) {
-                results.push({
+                return res.status(400).json({
                     success: false,
                     message: "Answer for this question already exists for the student in this test",
                     question_id,
                 });
-                continue;
             }
 
             // Fetch the correct answer (answer_text and answer_image) and marks for the question
@@ -243,7 +253,7 @@ async function addFinalResult(test_id, std_id) {
 
         const [insertResult] = await pool.promise().query(insertQuery, insertValues);
 
-        console.log("Final result recorded successfully:", insertResult);
+        // console.log("Final result recorded successfully:", insertResult);
     } catch (err) {
         console.error("Error processing addFinalResult:", err.message);
     }

@@ -20,7 +20,7 @@ const { getTopic } = require("./apis/admin/getTopic");
 const { getSubTopic } = require("./apis/admin/getSubTopic");
 const { LoginAdmin } = require("./apis/admin/authentication.js/login");
 const { AddQuestions } = require("./apis/admin/questions/addQuestions");
-const { uploadQuestionImage, uploadTestImage } = require("./middleware/multer");
+const { uploadQuestionImage, uploadTestImage, uploadParagraphImage } = require("./middleware/multer");
 const { getQuestions } = require("./apis/admin/questions/getQuestions");
 const { getQuestionsById } = require("./apis/admin/questions/getQuestionsById");
 const { addTest } = require("./apis/admin/quiz/addTest");
@@ -32,6 +32,10 @@ const { getActiveTests } = require("./apis/admin/quiz/getActiveTest");
 const { getTestQuestions } = require("./apis/admin/quiz/getTestQuestions");
 const { getResultByStudent } = require("./apis/admin/quiz/getResultByStudent");
 const { getActiveTestsForStudent } = require("./apis/admin/quiz/getActiveTestForStudent");
+const { AddParagraph } = require("./apis/admin/questions/AddParagraph");
+const { GetParagraph } = require("./apis/admin/questions/getParagraph");
+const { GetProfileDetail } = require("./apis/users/profile/getProfileDetail");
+const { UpdateProfileDetail } = require("./apis/users/profile/updateProfile");
 require('dotenv').config();
 
 const app = express();
@@ -47,7 +51,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"]
 }));
 app.use("/uploads/images/question_imgs", express.static("upload/images/question_imgs"));
-app.use("/uploads/images/test_images", express.static("uploads/images/test_images"));
+app.use("/uploads/images/test_images", express.static("uploads/images/test_imgs"));
 
 //!User APIs
 app.post("/signup_s1", SignupUser_s1);
@@ -59,6 +63,8 @@ app.post("/resend_email_otp", resendEmailOTP);
 app.post("/resend_mobile_otp", resendMobileOTP);
 app.post("/send_reset_pass_otp", send_reset_pass_otp);
 app.post("/verify_reset_pass_otp", verifyResetPassOtp);
+app.get("/getProfileDetails", checkAuth, GetProfileDetail);
+app.post("/updateProfile", checkAuth, uploadQuestionImage.single("User_DP"), UpdateProfileDetail);
 app.post("/reset_password", resetPassword);
 app.post("/logout", checkAuth, LogoutUser);
 app.post("/session", checkAuth, Session);
@@ -74,6 +80,8 @@ app.post("/admin/addQuestion", checkAuth, uploadQuestionImage.fields([
     { name: "option_d_image", maxCount: 1 },
     { name: "answer_image", maxCount: 1 }
 ]), AddQuestions);
+app.post("/admin/addParagraph", checkAuth, uploadParagraphImage.single("paragraph_img"), AddParagraph);
+app.post("/admin/getParagraph", checkAuth, GetParagraph);
 app.get("/getSubjects", getSubjects);
 app.post("/getTopics", getTopic);
 app.post("/getSubTopics", getSubTopic);
