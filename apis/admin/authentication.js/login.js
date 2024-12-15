@@ -70,10 +70,10 @@ async function LoginAdmin(req, res) {
             message: "Login successful",
             data: {
                 id: admin.Id,
-                name: admin.Name,
-                phone: admin.Phone,
-                email: admin.Email,
-                role: admin.Role
+                Name: admin.Name,
+                Phone: admin.Phone,
+                Email: admin.Email,
+                Role: admin.Role
             },
             auth: {
                 token,

@@ -36,6 +36,7 @@ const { AddParagraph } = require("./apis/admin/questions/AddParagraph");
 const { GetParagraph } = require("./apis/admin/questions/getParagraph");
 const { GetProfileDetail } = require("./apis/users/profile/getProfileDetail");
 const { UpdateProfileDetail } = require("./apis/users/profile/updateProfile");
+const { changePassword } = require("./apis/users/authentication/change_password/changePassword");
 require('dotenv').config();
 
 const app = express();
@@ -63,6 +64,7 @@ app.post("/resend_email_otp", resendEmailOTP);
 app.post("/resend_mobile_otp", resendMobileOTP);
 app.post("/send_reset_pass_otp", send_reset_pass_otp);
 app.post("/verify_reset_pass_otp", verifyResetPassOtp);
+app.post("/change_password", checkAuth, changePassword);
 app.get("/getProfileDetails", checkAuth, GetProfileDetail);
 app.post("/updateProfile", checkAuth, uploadQuestionImage.single("User_DP"), UpdateProfileDetail);
 app.post("/reset_password", resetPassword);
