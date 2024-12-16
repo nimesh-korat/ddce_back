@@ -1,23 +1,17 @@
 const pool = require("../../../db/dbConnect");
 
-const formatDate = (date) => {
-  const d = new Date(date);
-  return d.toISOString().split('T')[0]; // Converts to 'YYYY-MM-DD' format
-};
-
-async function UpdateProfileDetail(req, res) {
+async function UpdateAcademicDetail(req, res) {
     try {
-        const added_by = req?.user?.id;
+        const userId = req?.user?.id;
 
-        if (!added_by) {
+        if (!userId) {
             return res.status(401).json({
                 success: false,
                 message: "Unauthorized",
             });
         }
 
-        const { Id, Name, Email_Id, Phone_Number, Whatsapp_Number, Address, DOB, Gender, Enrollment_No, College_Name, Branch_Name, Semester } = req.body;
-        const userDp = req.file ? req.file.filename : null;
+        const { Id, College_Name, Branch_Name, Semester, Enrollment_No } = req.body;
 
         if (!Id) {
             return res.status(400).json({
@@ -35,41 +29,25 @@ async function UpdateProfileDetail(req, res) {
             })
         }
 
-        if (user[0].Id !== added_by) {
+        if (user[0].Id !== userId) {
             return res.status(403).json({
                 success: false,
                 message: "You are not authorized to update this user's profile.",
             });
         }
 
-        const formattedDOB = DOB ? formatDate(DOB) : user[0].DOB;
-
         const sql = `UPDATE users SET 
-            Name = ?, 
-            Email_Id = ?, 
-            Phone_Number = ?, 
-            Whatsapp_Number = ?, 
-            Address = ?, 
-            DOB = ?, 
-            Gender = ?, 
-            Enrollment_No = ?, 
             College_Name = ?, 
             Branch_Name = ?, 
-            Semester = ? 
+            Semester = ?, 
+            Enrollment_No = ?
             WHERE Id = ?`;
 
         const values = [
-            Name || user[0].Name,
-            Email_Id || user[0].Email_Id,
-            Phone_Number || user[0].Phone_Number,
-            Whatsapp_Number || user[0].Whatsapp_Number,
-            Address || user[0].Address,
-            formattedDOB,
-            Gender || user[0].Gender,
-            Enrollment_No || user[0].Enrollment_No,
             College_Name || user[0].College_Name,
             Branch_Name || user[0].Branch_Name,
             Semester || user[0].Semester,
+            Enrollment_No || user[0].Enrollment_No,
             Id
         ];
 
@@ -97,4 +75,4 @@ async function UpdateProfileDetail(req, res) {
     }
 }
 
-module.exports = { UpdateProfileDetail };
+module.exports = { UpdateAcademicDetail };
