@@ -38,6 +38,8 @@ const { GetProfileDetail } = require("./apis/users/profile/getProfileDetail");
 const { UpdateProfileDetail } = require("./apis/users/profile/updatePersonalDetails");
 const { changePassword } = require("./apis/users/authentication/change_password/changePassword");
 const { UpdateAcademicDetail } = require("./apis/users/profile/updateAcademicDetails");
+const { GetSyllabus } = require("./apis/users/getSyllabus");
+const { GetSyllabusWithPaper } = require("./apis/users/getWholeSyllabusWithPaper");
 require('dotenv').config();
 
 const app = express();
@@ -67,6 +69,8 @@ app.post("/send_reset_pass_otp", send_reset_pass_otp);
 app.post("/verify_reset_pass_otp", verifyResetPassOtp);
 app.post("/change_password", checkAuth, changePassword);
 app.get("/getProfileDetails", checkAuth, GetProfileDetail);
+app.get("/getSyllabus", GetSyllabus);
+app.get("/getSyllabusWithPaper", GetSyllabusWithPaper);
 app.post("/updatePersonalDetails", checkAuth, uploadQuestionImage.single("User_DP"), UpdateProfileDetail);
 app.post("/updateAcademicDetails", checkAuth, UpdateAcademicDetail);
 app.post("/reset_password", resetPassword);
