@@ -52,7 +52,7 @@ async function addTest(req, res) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const newTestDifficulty = test_difficulty === 'Easy' ? 0 : test_difficulty === 'Medium' ? 2 : test_difficulty === 'Hard' ? 3 : test_difficulty === 'Time Consuming' ? 4 : null;
+    const newTestDifficulty = test_difficulty === 'Easy' ? 0 : test_difficulty === 'Medium' ? 1 : test_difficulty === 'Hard' ? 2 : test_difficulty === 'Time Consuming' ? 3 : null;
     const values = [
         test_name,
         test_desc,
