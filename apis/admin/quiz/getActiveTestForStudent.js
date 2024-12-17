@@ -22,10 +22,10 @@ async function getActiveTestsForStudent(req, res) {
                 t.test_duration,
                 t.added_by,
                 t.status,
-                COUNT(q.id) AS total_questions,
+                COUNT(ttq.question_id) AS total_questions,
                 IF(fr.std_id IS NOT NULL, true, false) AS has_taken
             FROM tbl_test t
-            LEFT JOIN tbl_questions q ON t.id = q.test_id
+            LEFT JOIN tbl_test_questions ttq ON t.id = ttq.test_id
             LEFT JOIN tbl_final_result fr ON t.id = fr.test_id AND fr.std_id = ?
             WHERE t.status = '1'
             GROUP BY t.id
