@@ -40,6 +40,8 @@ const { changePassword } = require("./apis/users/authentication/change_password/
 const { UpdateAcademicDetail } = require("./apis/users/profile/updateAcademicDetails");
 const { GetSyllabus } = require("./apis/users/getSyllabus");
 const { GetSyllabusWithPaper } = require("./apis/users/getWholeSyllabusWithPaper");
+const { getQuestionsForVerification } = require("./apis/admin/verifyQuestions/getQuestionForVerification");
+const { VerifyQuestion } = require("./apis/admin/verifyQuestions/verifyQuestions");
 require('dotenv').config();
 
 const app = express();
@@ -101,6 +103,8 @@ app.post("/admin/addTestQuestions", checkAuth, addTestQuestions);
 app.post("/addStudentAnswer", checkAuth, addStudentAnswer);
 app.post("/addFinalResult", addFinalResult);
 app.post("/admin/getQuestionsForTest", checkAuth, getQuestionsForTest);
+app.post("/admin/getQuestionsForVerification", checkAuth, getQuestionsForVerification);
+app.post("/admin/verifyQuestion", checkAuth, VerifyQuestion);
 app.get("/admin/getTests", getActiveTests);
 app.post("/getTest", checkAuth, getActiveTestsForStudent);
 app.post("/getTestQuestions", checkAuth, getTestQuestions);
