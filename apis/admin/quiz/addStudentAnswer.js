@@ -99,8 +99,6 @@ async function addStudentAnswer(req, res) {
                 obt_marks = -test_neg_marks;
             }
 
-            console.log("Attempt Status:", rawAttemptStatus);
-
             // Insert the student's answer into the database
             const sql = `
                 INSERT INTO tbl_student_answer (

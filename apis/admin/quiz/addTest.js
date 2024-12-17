@@ -19,8 +19,6 @@ async function addTest(req, res) {
             message: "Unauthorized"
         });
     }
-
-    console.log(req.file.filename);
     const test_img_path = req.file.filename;
 
     // Validate required fields
@@ -35,8 +33,6 @@ async function addTest(req, res) {
     // Now parse them with date-fns
     const formattedStartDate = format(parseISO(isoStartDate), "yyyy-MM-dd HH:mm:ss");
     const formattedEndDate = format(parseISO(isoEndDate), "yyyy-MM-dd HH:mm:ss");
-
-    console.log(formattedStartDate, formattedEndDate);
 
     const sql = `
         INSERT INTO tbl_test (

@@ -2,7 +2,6 @@ const pool = require("../../../db/dbConnect");
 
 const formatDate = (date) => {
     const d = date;
-    console.log(d.split('T')[0]);
 
     return d.split('T')[0]; // Converts to 'YYYY-MM-DD' format from 'YYYY-MM-DDTHH:MM:SS+00:00'
 };

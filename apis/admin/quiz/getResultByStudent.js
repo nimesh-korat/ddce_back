@@ -7,7 +7,6 @@ async function getResultByStudent(req, res) {
     if (!test_id) {
         return res.status(400).json({ success: false, message: "Missing required std_id or test_id" });
     }
-    console.log(req.user);
     
 
     const std_id = req?.user.id;

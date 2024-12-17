@@ -37,7 +37,6 @@ async function addFinalResult(req, res) {
             WHERE tq.test_id = ?
         `;
         const [totalMarksResult] = await pool.promise().query(totalMarksQuery, [test_id]);
-        console.log(totalMarksResult);
 
         if (totalMarksResult.length === 0 || totalMarksResult[0].total_marks === null) {
             return res.status(404).json({ success: false, message: "No questions found for this test" });
