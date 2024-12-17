@@ -1,14 +1,14 @@
 const pool = require("../../../db/dbConnect");
 
 async function getActiveTestsForStudent(req, res) {
-
     const std_id = req?.user.id;
+
     if (!std_id) {
         return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
     try {
-        // SQL query to fetch active tests and check if the student has already taken the test
+        // SQL query to fetch active tests with minimum 5 questions and check if the student has taken the test
         const sql = `
             SELECT 
                 t.id AS test_id,
@@ -22,10 +22,14 @@ async function getActiveTestsForStudent(req, res) {
                 t.test_duration,
                 t.added_by,
                 t.status,
+                COUNT(q.id) AS total_questions,
                 IF(fr.std_id IS NOT NULL, true, false) AS has_taken
             FROM tbl_test t
+            LEFT JOIN tbl_questions q ON t.id = q.test_id
             LEFT JOIN tbl_final_result fr ON t.id = fr.test_id AND fr.std_id = ?
             WHERE t.status = '1'
+            GROUP BY t.id
+            HAVING total_questions >= 5
         `;
 
         // Execute the query with the student ID as parameter
@@ -34,7 +38,7 @@ async function getActiveTestsForStudent(req, res) {
         if (tests.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "No active tests found",
+                message: "No active tests with minimum 5 questions found",
             });
         }
 
