@@ -70,7 +70,7 @@ async function AddQuestions(req, res) {
     // Values for the SQL query
     const values = [
         tbl_subtopic,
-        tbl_paragraph,
+        parseInt(tbl_paragraph),
         question_text,
         question_image,
         updatedOptionAText,
