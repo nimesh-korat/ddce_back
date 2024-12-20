@@ -21,6 +21,11 @@ async function AddParagraph(req, res) {
         });
     }
 
+    const getParagraphSql = `
+        SELECT * FROM tbl_paragraph WHERE paragraph_title = ?
+    `;
+    const getParagraphValues = [paragraph_title];
+
     const paragraphSql = `
         INSERT INTO tbl_paragraph (
             paragraph_title,
@@ -42,6 +47,16 @@ async function AddParagraph(req, res) {
     ];
 
     try {
+
+        const [getParagraphResult] = await pool.promise().query(getParagraphSql, getParagraphValues);
+
+        if (getParagraphResult.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Paragraph title already exists",
+            });
+        }
+
         const [result] = await pool.promise().query(paragraphSql, paragraphValues);
 
         if (result.affectedRows === 0) {

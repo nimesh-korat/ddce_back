@@ -1,12 +1,6 @@
 const pool = require("../../../db/dbConnect");
 
-const formatDate = (date) => {
-    const d = date;
-
-    return d.split('T')[0]; // Converts to 'YYYY-MM-DD' format from 'YYYY-MM-DDTHH:MM:SS+00:00'
-};
-
-async function UpdateProfileDetail(req, res) {
+async function UpdateProfilePic(req, res) {
     try {
         const userId = req?.user?.id;
 
@@ -17,17 +11,17 @@ async function UpdateProfileDetail(req, res) {
             });
         }
 
-        const { Id, Name, Email_Id, Phone_Number, Whatsapp_Number, DOB, Gender, Address } = req.body;
+        const userDp = req.file ? req.file.filename : null;
 
-        if (!Id) {
+        if (userDp === null || userDp === undefined) {
             return res.status(400).json({
                 success: false,
-                message: "Missing required fields.",
+                message: "Image is required.",
             });
         }
 
         const userSql = "SELECT * FROM users WHERE Id = ?";
-        const [user] = await pool.promise().query(userSql, [Id]);
+        const [user] = await pool.promise().query(userSql, [userId]);
         if (user.length === 0) {
             return res.status(404).json({
                 success: false,
@@ -35,34 +29,13 @@ async function UpdateProfileDetail(req, res) {
             })
         }
 
-        if (user[0].Id !== userId) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not authorized to update this user's profile.",
-            });
-        }
-
-        const formattedDOB = DOB ? formatDate(DOB) : user[0].DOB;
-
         const sql = `UPDATE users SET 
-            Name = ?, 
-            Email_Id = ?, 
-            Phone_Number = ?, 
-            Whatsapp_Number = ?, 
-            Address = ?, 
-            DOB = ?, 
-            Gender = ?
+            User_DP = ?
             WHERE Id = ?`;
 
         const values = [
-            Name || user[0].Name,
-            Email_Id || user[0].Email_Id,
-            Phone_Number || user[0].Phone_Number,
-            Whatsapp_Number || user[0].Whatsapp_Number,
-            Address || user[0].Address,
-            formattedDOB,
-            Gender || user[0].Gender,
-            Id
+            userDp,
+            userId
         ];
 
         const [results] = await pool.promise().query(sql, values);
@@ -76,7 +49,8 @@ async function UpdateProfileDetail(req, res) {
 
         return res.status(200).json({
             success: true,
-            message: "Profile updated successfully.",
+            data: userDp,
+            message: "Profile picture updated successfully.",
         });
 
     } catch (err) {
@@ -89,4 +63,4 @@ async function UpdateProfileDetail(req, res) {
     }
 }
 
-module.exports = { UpdateProfileDetail };
+module.exports = { UpdateProfilePic };

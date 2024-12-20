@@ -20,7 +20,7 @@ const { getTopic } = require("./apis/admin/getTopic");
 const { getSubTopic } = require("./apis/admin/getSubTopic");
 const { LoginAdmin } = require("./apis/admin/authentication.js/login");
 const { AddQuestions } = require("./apis/admin/questions/addQuestions");
-const { uploadQuestionImage, uploadTestImage, uploadParagraphImage } = require("./middleware/multer");
+const { uploadQuestionImage, uploadTestImage, uploadParagraphImage, uploadProfileImage } = require("./middleware/multer");
 const { getQuestions } = require("./apis/admin/questions/getQuestions");
 const { getQuestionsById } = require("./apis/admin/questions/getQuestionsById");
 const { addTest } = require("./apis/admin/quiz/addTest");
@@ -42,6 +42,7 @@ const { GetSyllabus } = require("./apis/users/getSyllabus");
 const { GetSyllabusWithPaper } = require("./apis/users/getWholeSyllabusWithPaper");
 const { getQuestionsForVerification } = require("./apis/admin/verifyQuestions/getQuestionForVerification");
 const { VerifyQuestion } = require("./apis/admin/verifyQuestions/verifyQuestions");
+const { UpdateProfilePic } = require("./apis/users/profile/updateProfilePic");
 require('dotenv').config();
 
 const app = express();
@@ -58,6 +59,7 @@ app.use(cors({
 }));
 app.use("/uploads/images/question_imgs", express.static("upload/images/question_imgs"));
 app.use("/uploads/images/test_images", express.static("uploads/images/test_imgs"));
+app.use("/uploads/images/profile_imgs", express.static("uploads/images/profile_imgs"));
 
 //!User APIs
 app.post("/signup_s1", SignupUser_s1);
@@ -73,7 +75,8 @@ app.post("/change_password", checkAuth, changePassword);
 app.get("/getProfileDetails", checkAuth, GetProfileDetail);
 app.get("/getSyllabus", GetSyllabus);
 app.get("/getSyllabusWithPaper", GetSyllabusWithPaper);
-app.post("/updatePersonalDetails", checkAuth, uploadQuestionImage.single("User_DP"), UpdateProfileDetail);
+app.post("/updatePersonalDetails", checkAuth, UpdateProfileDetail);
+app.post("/updateProfilePic", checkAuth, uploadProfileImage.single("User_DP"), UpdateProfilePic);
 app.post("/updateAcademicDetails", checkAuth, UpdateAcademicDetail);
 app.post("/reset_password", resetPassword);
 app.post("/logout", checkAuth, LogoutUser);
