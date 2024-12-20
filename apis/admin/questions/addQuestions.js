@@ -11,7 +11,10 @@ async function AddQuestions(req, res) {
         option_d_text,
         answer_text,
         question_marks,
-        question_difficulty
+        question_difficulty,
+        prevAskedPaper,
+        prevAskedYear,
+        fromBook
     } = req.body;
 
     const added_by = req?.user.id;
@@ -63,8 +66,11 @@ async function AddQuestions(req, res) {
             answer_image,
             question_marks,
             question_difficulty,
+            prevAskedPaper,
+            prevAskedYear,
+            fromBook,
             added_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     // Values for the SQL query
@@ -85,6 +91,9 @@ async function AddQuestions(req, res) {
         answer_image,
         question_marks,
         question_difficulty,
+        prevAskedPaper,
+        prevAskedYear,
+        fromBook,
         added_by
     ];
 
