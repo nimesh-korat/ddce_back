@@ -43,6 +43,8 @@ const { GetSyllabusWithPaper } = require("./apis/users/getWholeSyllabusWithPaper
 const { getQuestionsForVerification } = require("./apis/admin/verifyQuestions/getQuestionForVerification");
 const { VerifyQuestion } = require("./apis/admin/verifyQuestions/verifyQuestions");
 const { UpdateProfilePic } = require("./apis/users/profile/updateProfilePic");
+const { GetTopicWiseQuestionAnalytics } = require("./apis/users/analytics/getTopicWiseQuestionAnalytics");
+const { GetSubTopicWiseQuestionAnalytics } = require("./apis/users/analytics/getSubTopicWiseQuestionAnalytics");
 require('dotenv').config();
 
 const app = express();
@@ -52,14 +54,19 @@ const PORT = process.env.PORT || 8000;
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
 app.use(cors({
     origin: ["http://localhost:3000", "http://192.168.0.19:3000", process.env.FRONTEND_URL],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"]
 }));
-app.use("/uploads/images/question_imgs", express.static("upload/images/question_imgs"));
 app.use("/uploads/images/test_images", express.static("uploads/images/test_imgs"));
+app.use("/uploads/images/question_imgs", express.static("upload/images/question_imgs"));
 app.use("/uploads/images/profile_imgs", express.static("uploads/images/profile_imgs"));
+app.use((req, res, next) => { //?Removing the first part of the url for nginx
+    req.url = req.url.replace(/^\/[^\/]+/, '');
+    next();
+});
 
 //!User APIs
 app.post("/signup_s1", SignupUser_s1);
@@ -82,6 +89,8 @@ app.post("/reset_password", resetPassword);
 app.post("/logout", checkAuth, LogoutUser);
 app.post("/session", checkAuth, Session);
 app.get("/getRecentRegNotifications", registrationNotification)
+app.get("/getTopicWiseQuestionAnalytics", checkAuth, GetTopicWiseQuestionAnalytics);
+app.get("/getSubTopicWiseQuestionAnalytics", checkAuth, GetSubTopicWiseQuestionAnalytics);
 
 //!Admin APIs
 app.post("/admin/login", LoginAdmin);
