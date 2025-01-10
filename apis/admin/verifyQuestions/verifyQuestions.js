@@ -54,11 +54,8 @@ async function VerifyQuestion(req, res) {
         let updateCorrectAnswerResults, updateAnswerResults;
 
         if (is_correct === true) {
-            console.log("we are at updateCorrectAnswerResults");
             [updateCorrectAnswerResults] = await pool.promise().query(updateCorrectAnswerSql, updateCorrectAnswerValues);
         } else {
-            console.log("we are at updateAnswerResults");
-
             [updateAnswerResults] = await pool.promise().query(updateAnswerSql, updateAnswerValues);
         }
 

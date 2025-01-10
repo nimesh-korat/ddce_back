@@ -1,7 +1,9 @@
+const { generateSignedUrl } = require("../../../utils/generateSignedUrl");
 const pool = require("../../../db/dbConnect");
 
 async function getTestQuestions(req, res) {
-    const { test_id } = req.body; // Assuming test_id is sent as a query parameter
+    const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
+    const { test_id } = req.body; // Assuming test_id is sent in the request body
 
     // Validate required fields
     if (!test_id) {
@@ -40,10 +42,32 @@ async function getTestQuestions(req, res) {
             });
         }
 
+        // Generate signed URLs for images
+        const signedQuestions = questions.map((question) => {
+            // Helper function to generate signed URL or return null if no image path
+            const generateSignedImageUrl = (imagePath) => {
+                return imagePath
+                    ? generateSignedUrl(
+                        `${cloudfrontDomain}/${imagePath}`,
+                        new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 day expiry
+                    )
+                    : null;
+            };
+
+            return {
+                ...question,
+                question_image: generateSignedImageUrl(question.question_image),
+                option_a_image: generateSignedImageUrl(question.option_a_image),
+                option_b_image: generateSignedImageUrl(question.option_b_image),
+                option_c_image: generateSignedImageUrl(question.option_c_image),
+                option_d_image: generateSignedImageUrl(question.option_d_image),
+            };
+        });
+
         return res.status(200).json({
             success: true,
             message: "Questions fetched successfully",
-            data: questions,
+            data: signedQuestions,
         });
     } catch (err) {
         console.error("Error fetching questions for test:", err.message);

@@ -1,9 +1,12 @@
+const { generateSignedUrl } = require("../../../utils/generateSignedUrl");
 const pool = require("../../../db/dbConnect");
 
 async function getQuestionsForTest(req, res) {
+    const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
     const { subtopic_id } = req.body;
+
     try {
-        // Fetch all questions
+        // Fetch all questions for the given subtopic
         const questionsQuery = `
             SELECT 
                 q.id AS question_id,
@@ -45,9 +48,25 @@ async function getQuestionsForTest(req, res) {
             askedQuestions.map((row) => row.question_id)
         );
 
-        // Add `isAsked` field to each question
+        // Helper function to generate signed URL or return null if no image path
+        const generateSignedImageUrl = (imagePath) => {
+            return imagePath
+                ? generateSignedUrl(
+                    `${cloudfrontDomain}/${imagePath}`,
+                    new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 day expiry
+                )
+                : null;
+        };
+
+        // Add `isAsked` field and signed URLs to each question
         const questionsWithIsAsked = questions.map((question) => ({
             ...question,
+            question_image: generateSignedImageUrl(question.question_image),
+            option_a_image: generateSignedImageUrl(question.option_a_image),
+            option_b_image: generateSignedImageUrl(question.option_b_image),
+            option_c_image: generateSignedImageUrl(question.option_c_image),
+            option_d_image: generateSignedImageUrl(question.option_d_image),
+            answer_image: generateSignedImageUrl(question.answer_image),
             isAsked: askedQuestionIds.has(question.question_id),
         }));
 

@@ -8,8 +8,6 @@ async function LogoutUser(req, res) {
     if (!session && !token) {
         return res.status(400).json({ success: false, message: "No active session" });
     }
-    console.log(session);
-
 
     try {
         // Mark the session as revoked in the database

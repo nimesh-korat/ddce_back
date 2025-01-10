@@ -14,8 +14,7 @@ async function sendSMS(body, toPhoneNumber) {
             from: process.env.TWILIO_PHONE_NUMBER,          // Your Twilio phone number
             to: `+91${toPhoneNumber}`             // Recipient's phone number
         });
-
-        console.log(`Message sent successfully. SID: ${message.sid}`);
+        
         return message.sid; // Return the message SID for further use or logging
     } catch (error) {
         console.error('Error sending SMS:', error);

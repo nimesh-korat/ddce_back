@@ -1,6 +1,9 @@
+const { generateSignedUrl } = require("../../../utils/generateSignedUrl");
 const pool = require("../../../db/dbConnect");
 
 async function getActiveTests(req, res) {
+    const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
+
     try {
         const sql = `
             SELECT 
@@ -28,10 +31,30 @@ async function getActiveTests(req, res) {
             });
         }
 
+        // Generate signed URLs for test images
+        const signedTests = await Promise.all(
+            tests.map(async (test) => {
+                const testImgPath = test.test_img_path;
+
+                // If an image path exists, generate a signed URL
+                const signedUrl = testImgPath
+                    ? generateSignedUrl(
+                        `${cloudfrontDomain}/${testImgPath}`,
+                        new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 day expiry
+                    )
+                    : null;
+
+                return {
+                    ...test,
+                    test_img_path: signedUrl, // Replace image path with signed URL
+                };
+            })
+        );
+
         return res.status(200).json({
             success: true,
             message: "Test list fetched successfully",
-            data: tests,
+            data: signedTests,
         });
     } catch (err) {
         console.error("Error fetching active tests:", err.message);

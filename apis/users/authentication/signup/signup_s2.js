@@ -26,7 +26,7 @@ async function SignupUser_s2(req, res) {
         return res.status(201).json({ success: true, message: "Signed up successfully" });
     } catch (err) {
         console.error("Error processing SignupUser_s2:", err.message);
-        return res.status(500).json({ success: false, error: "Database error", details: err.message });
+        return res.status(500).json({ success: false, message: "Something went wrong", details: err.message });
     }
 }
 

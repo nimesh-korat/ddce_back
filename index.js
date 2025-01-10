@@ -20,7 +20,6 @@ const { getTopic } = require("./apis/admin/getTopic");
 const { getSubTopic } = require("./apis/admin/getSubTopic");
 const { LoginAdmin } = require("./apis/admin/authentication.js/login");
 const { AddQuestions } = require("./apis/admin/questions/addQuestions");
-const { uploadQuestionImage, uploadTestImage, uploadParagraphImage, uploadProfileImage } = require("./middleware/multer");
 const { getQuestions } = require("./apis/admin/questions/getQuestions");
 const { getQuestionsById } = require("./apis/admin/questions/getQuestionsById");
 const { addTest } = require("./apis/admin/quiz/addTest");
@@ -45,6 +44,9 @@ const { VerifyQuestion } = require("./apis/admin/verifyQuestions/verifyQuestions
 const { UpdateProfilePic } = require("./apis/users/profile/updateProfilePic");
 const { GetTopicWiseQuestionAnalytics } = require("./apis/users/analytics/getTopicWiseQuestionAnalytics");
 const { GetSubTopicWiseQuestionAnalytics } = require("./apis/users/analytics/getSubTopicWiseQuestionAnalytics");
+const { uploadImg } = require("./middleware/s3MulterConfig");
+const { GetProfileImage } = require("./apis/users/profile/getProfileImage");
+const { GetSubjectWiseAnalysis } = require("./apis/users/analytics/getSubjectWiseQuestionAnalysis");
 require('dotenv').config();
 
 const app = express();
@@ -60,6 +62,7 @@ app.use(cors({
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"]
 }));
+
 app.use("/uploads/images/test_images", express.static("uploads/images/test_imgs"));
 app.use("/uploads/images/question_imgs", express.static("upload/images/question_imgs"));
 app.use("/uploads/images/profile_imgs", express.static("uploads/images/profile_imgs"));
@@ -83,18 +86,20 @@ app.get("/getProfileDetails", checkAuth, GetProfileDetail);
 app.get("/getSyllabus", GetSyllabus);
 app.get("/getSyllabusWithPaper", GetSyllabusWithPaper);
 app.post("/updatePersonalDetails", checkAuth, UpdateProfileDetail);
-app.post("/updateProfilePic", checkAuth, uploadProfileImage.single("User_DP"), UpdateProfilePic);
+app.post("/updateProfilePic", checkAuth, uploadImg.single("User_DP"), UpdateProfilePic);
+app.get("/getProfileImage", checkAuth, GetProfileImage);
 app.post("/updateAcademicDetails", checkAuth, UpdateAcademicDetail);
 app.post("/reset_password", resetPassword);
 app.post("/logout", checkAuth, LogoutUser);
 app.post("/session", checkAuth, Session);
-app.get("/getRecentRegNotifications", registrationNotification)
+app.get("/getRecentRegNotifications", registrationNotification);
 app.get("/getTopicWiseQuestionAnalytics", checkAuth, GetTopicWiseQuestionAnalytics);
 app.get("/getSubTopicWiseQuestionAnalytics", checkAuth, GetSubTopicWiseQuestionAnalytics);
+app.get("/getSubjectWiseAnalysis", checkAuth, GetSubjectWiseAnalysis);
 
 //!Admin APIs
 app.post("/admin/login", LoginAdmin);
-app.post("/admin/addQuestion", checkAuth, uploadQuestionImage.fields([
+app.post("/admin/addQuestion", checkAuth, uploadImg.fields([
     { name: "question_image", maxCount: 1 },
     { name: "option_a_image", maxCount: 1 },
     { name: "option_b_image", maxCount: 1 },
@@ -102,7 +107,7 @@ app.post("/admin/addQuestion", checkAuth, uploadQuestionImage.fields([
     { name: "option_d_image", maxCount: 1 },
     { name: "answer_image", maxCount: 1 }
 ]), AddQuestions);
-app.post("/admin/addParagraph", checkAuth, uploadParagraphImage.single("paragraph_img"), AddParagraph);
+app.post("/admin/addParagraph", checkAuth, uploadImg.single("paragraph_img"), AddParagraph);
 app.post("/admin/getParagraph", checkAuth, GetParagraph);
 app.get("/getSubjects", getSubjects);
 app.post("/getTopics", getTopic);
@@ -110,7 +115,7 @@ app.post("/getSubTopics", getSubTopic);
 app.get("/admin/questions", getQuestions);
 app.post("/admin/getquestionsbyid", getQuestionsById);
 
-app.post("/admin/addTest", checkAuth, uploadTestImage.single("test_img_path"), addTest);
+app.post("/admin/addTest", checkAuth, uploadImg.single("test_img_path"), addTest);
 app.post("/admin/addTestQuestions", checkAuth, addTestQuestions);
 app.post("/addStudentAnswer", checkAuth, addStudentAnswer);
 app.post("/addFinalResult", addFinalResult);
