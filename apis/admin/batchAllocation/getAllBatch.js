@@ -1,8 +1,8 @@
-const pool = require("../../db/dbConnect");
+const pool = require("../../../db/dbConnect");
 
-async function getSubjects(req, res) {
+async function getAllBatch(req, res) {
     try {
-        const sql = `SELECT * FROM tbl_subject`;
+        const sql = `SELECT * FROM tbl_batch`;
 
         // Execute the query using the connection pool
         const [results] = await pool.promise().query(sql);
@@ -10,7 +10,7 @@ async function getSubjects(req, res) {
         if (results.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "No subjects found.",
+                message: "No batch found.",
             });
         }
 
@@ -21,7 +21,7 @@ async function getSubjects(req, res) {
         });
 
     } catch (err) {
-        console.error("Error fetching subjects:", err.message);
+        console.error("Error getAllBatch:", err.message);
         return res.status(500).json({
             success: false,
             message: "Error processing request",
@@ -30,4 +30,4 @@ async function getSubjects(req, res) {
     }
 }
 
-module.exports = { getSubjects };
+module.exports = { getAllBatch };

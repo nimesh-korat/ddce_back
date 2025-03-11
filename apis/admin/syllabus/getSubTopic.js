@@ -1,16 +1,16 @@
-const pool = require("../../db/dbConnect");
+const pool = require("../../../db/dbConnect");
 
-async function getTopic(req, res) {
-    const { subjectId } = req.body;
+async function getSubTopic(req, res) {
+    const { topicId } = req.body;
     try {
-        const sql = `SELECT * FROM tbl_topic WHERE tbl_subject = ?`;
-        const [results] = await pool.promise().query(sql, subjectId);
+        const sql = `SELECT * FROM tbl_subtopic WHERE tbl_topic = ?`;
+        const [results] = await pool.promise().query(sql, topicId);
 
 
         if (results.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "No chapter found for this subject.",
+                message: "No sub topics found for this chapter.",
             });
         }
 
@@ -21,7 +21,7 @@ async function getTopic(req, res) {
         });
 
     } catch (err) {
-        console.error("Error fetching subjects:", err.message);
+        console.error("Error getSubTopic:", err.message);
         return res.status(500).json({
             success: false,
             message: "Error processing request",
@@ -30,4 +30,4 @@ async function getTopic(req, res) {
     }
 }
 
-module.exports = { getTopic };
+module.exports = { getSubTopic };

@@ -7,19 +7,25 @@ async function getActiveTests(req, res) {
     try {
         const sql = `
             SELECT 
-                id AS test_id,
-                test_name,
-                test_desc,
-                test_img_path,
-                test_neg_marks,
-                test_start_date,
-                test_end_date,
-                test_duration,
-                test_difficulty,
-                added_by,
-                status
-            FROM tbl_test
-            WHERE status = '1'
+                t.id AS test_id,
+                t.test_name,
+                t.test_desc,
+                t.test_img_path,
+                t.test_neg_marks,
+                t.test_start_date,
+                t.test_end_date,
+                t.test_duration,
+                t.test_difficulty,
+                t.added_by,
+                t.status,
+                CASE 
+                    WHEN ta.tbl_test IS NOT NULL THEN true 
+                    ELSE false 
+                END AS isAssigned
+            FROM tbl_test t
+            LEFT JOIN tbl_test_assigned ta ON t.id = ta.tbl_test
+            WHERE t.status = '1'
+            GROUP BY t.id
         `;
 
         const [tests] = await pool.promise().query(sql);

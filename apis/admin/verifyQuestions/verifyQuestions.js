@@ -31,7 +31,8 @@ async function VerifyQuestion(req, res) {
 
         // Update for Correct Answer
         const updateCorrectAnswerSql = `UPDATE tbl_questions SET 
-            verifiedBy = ?
+            verifiedBy = ?,
+            verifiedOn = NOW()
             WHERE id = ?`;
 
         const updateCorrectAnswerValues = [
@@ -41,7 +42,8 @@ async function VerifyQuestion(req, res) {
 
         // Update for Incorrect Answer
         const updateAnswerSql = `UPDATE tbl_questions SET 
-            verifiedBy = ?, 
+            verifiedBy = ?,
+            verifiedOn = NOW(),
             answer_text = ?
             WHERE id = ?`;
 

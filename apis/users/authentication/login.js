@@ -51,12 +51,11 @@ async function LoginUser(req, res) {
 
     // Check how many active sessions the user already has
     const sqlCheckActiveSessions = `
-  SELECT * 
-  FROM sessions 
-  WHERE user_id = ? 
-  AND status = 'active' 
-  AND expires_at > UTC_TIMESTAMP()
-`;
+    SELECT * 
+    FROM sessions 
+    WHERE user_id = ? 
+    AND status = 'active' 
+    AND expires_at > UTC_TIMESTAMP()`;
     const [activeSessions] = await pool.promise().query(sqlCheckActiveSessions, [user.Id]);
 
     if (activeSessions.length >= 2) {
@@ -88,6 +87,7 @@ async function LoginUser(req, res) {
       message: "Login successful",
       user: {
         Id: user.Id,
+        Batch: user.tbl_batch,
         Name: user.Name,
         Email_Id: user.Email_Id,
         Gender: user.Gender,

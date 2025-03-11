@@ -4,11 +4,12 @@ async function registrationNotification(req, res) {
   try {
     // SQL query to fetch users registered in the last 20 minutes, ordered by minutes_ago in ascending order (recent first)
     const sql = `
-      SELECT 
-        Name, 
-        College_Name, 
-         DATE_FORMAT(registration_time, '%Y-%m-%d %H:%i:%s') AS registration_time
-      FROM users 
+      SELECT  
+        Name,  
+        College_Name,  
+        DATE_FORMAT(registration_time, '%Y-%m-%d %H:%i:%s') AS registration_time 
+      FROM users  
+      WHERE College_Name IS NOT NULL
       ORDER BY registration_time DESC
     `;
 
