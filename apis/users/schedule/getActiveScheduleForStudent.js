@@ -28,7 +28,7 @@ async function getActiveScheduleForStudent(req, res) {
             INNER JOIN tbl_batch b ON sa.tbl_batch = b.id
             WHERE sa.tbl_batch = ? 
             AND sa.tbl_phase = ? 
-            AND sa.is_featured = 1
+            AND sa.is_featured = "1"
               
             UNION ALL
               

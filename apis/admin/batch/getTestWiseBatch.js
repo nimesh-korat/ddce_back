@@ -1,39 +1,39 @@
 const pool = require("../../../db/dbConnect");
 
-async function getSessionWiseBatch(req, res) {
+async function getTestWiseBatch(req, res) {
   try {
-    const { session_id } = req.body;
+    const { test_id } = req.body;
 
-    if (!session_id) {
+    if (!test_id) {
       return res.status(400).json({
         success: false,
-        message: "Session ID is required.",
+        message: "Test ID is required.",
       });
     }
 
     const sql = `
             SELECT
-    tsa.Id AS assigned_session_id,
+    ta.id AS assigned_batch_id,
     b.id AS batch_id, 
     b.batch_title AS batch_name, 
     p.id AS phase_id,
     p.title AS phase_name,  -- Fetching phase name
-    tsa.start_date, 
-    tsa.end_date, 
-    tsa.is_featured
-FROM tbl_session_assigned tsa
-JOIN tbl_batch b ON tsa.tbl_batch = b.id
-JOIN tbl_phase p ON tsa.tbl_phase = p.id  -- Joining tbl_phase to get phase_name
-WHERE tsa.tbl_session = ?;
+    ta.start_date, 
+    ta.end_date, 
+    ta.isFeatured
+FROM tbl_test_assigned ta
+JOIN tbl_batch b ON ta.tbl_batch = b.id
+JOIN tbl_phase p ON ta.tbl_phase = p.id  -- Joining tbl_phase to get phase_name
+WHERE ta.tbl_test = ?;
         `;
 
     // Execute the query using the connection pool
-    const [results] = await pool.promise().query(sql, [session_id]);
+    const [results] = await pool.promise().query(sql, [test_id]);
 
     if (results.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No session assigned to this session.",
+        message: "No batch assigned to this test.",
       });
     }
 
@@ -42,7 +42,7 @@ WHERE tsa.tbl_session = ?;
       data: results,
     });
   } catch (err) {
-    console.error("Error getSessionWiseBatch:", err.message);
+    console.error("Error getTestWiseBatch:", err.message);
     return res.status(500).json({
       success: false,
       message: "Error processing request",
@@ -51,4 +51,4 @@ WHERE tsa.tbl_session = ?;
   }
 }
 
-module.exports = { getSessionWiseBatch };
+module.exports = { getTestWiseBatch };

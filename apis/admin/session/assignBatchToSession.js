@@ -29,17 +29,17 @@ async function assignBatchToSession(req, res) {
     // Step 1: Check if the test is already assigned to the batch
     const checkSql = `
             SELECT * FROM tbl_session_assigned 
-            WHERE tbl_batch = ? AND tbl_session = ?
+            WHERE tbl_batch = ? AND tbl_phase = ? AND tbl_session = ?
         `;
 
     const [existingRecords] = await pool
       .promise()
-      .query(checkSql, [tbl_batch, tbl_session]);
+      .query(checkSql, [tbl_batch, tbl_phase, tbl_session]);
 
     if (existingRecords.length > 0) {
       return res.status(409).json({
         success: false,
-        message: "This session is already assigned to the batch.",
+        message: "This session is already assigned to this batch and phase.",
       });
     }
 

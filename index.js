@@ -90,12 +90,10 @@ const {
 const {
   getAddedQuestionsInTest,
 } = require("./apis/admin/quiz/getAddedQuestionsInTest");
-const { AddBatchTitle } = require("./apis/admin/batchAllocation/AddBatch");
+const { AddBatchTitle } = require("./apis/admin/batch/AddBatch");
 const { assignTestBatch } = require("./apis/admin/quiz/assignTestToBatch");
-const { getAllBatch } = require("./apis/admin/batchAllocation/getAllBatch");
-const {
-  getTestWiseBatch,
-} = require("./apis/admin/batchAllocation/getTestWiseBatch");
+const { getAllBatch } = require("./apis/admin/batch/getAllBatch");
+const { getTestWiseBatch } = require("./apis/admin/batch/getTestWiseBatch");
 const { editTestBatch } = require("./apis/admin/quiz/editAssigedTestToBatch");
 const { updateIsFeatured } = require("./apis/admin/quiz/updateIsFeatured");
 const { AddPhase } = require("./apis/admin/phase/addPhase");
