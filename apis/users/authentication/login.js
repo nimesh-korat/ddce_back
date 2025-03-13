@@ -9,7 +9,9 @@ async function LoginUser(req, res) {
   const { Phone_Number, Password } = req.body;
 
   if (!Phone_Number || !Password) {
-    return res.status(400).json({ success: false, message: "Missing required fields" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing required fields" });
   }
 
   const sql = "SELECT * FROM users WHERE Phone_Number = ? AND Role = '0'"; // Query to fetch user by email
@@ -20,7 +22,9 @@ async function LoginUser(req, res) {
 
     // If no user found with the provided email
     if (results.length === 0) {
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid email or password" });
     }
 
     // User exists, now check verification and compare password
@@ -38,7 +42,9 @@ async function LoginUser(req, res) {
     const isPasswordValid = await bcrypt.compare(Password, user.Password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: "Invalid Phone or password" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid Phone or password" });
     }
     // Update expired sessions
     const sqlUpdateExpiredSessions = `
@@ -56,10 +62,11 @@ async function LoginUser(req, res) {
     WHERE user_id = ? 
     AND status = 'active' 
     AND expires_at > UTC_TIMESTAMP()`;
-    const [activeSessions] = await pool.promise().query(sqlCheckActiveSessions, [user.Id]);
+    const [activeSessions] = await pool
+      .promise()
+      .query(sqlCheckActiveSessions, [user.Id]);
 
     if (activeSessions.length >= 2) {
-
       return res.status(403).json({
         success: false,
         message: "You can only be logged in on two devices simultaneously.",
@@ -73,7 +80,8 @@ async function LoginUser(req, res) {
     const tokenId = uuidv4();
     const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // Token expires in 12 hours 12 * 60 * 60 * 1000
 
-    const sqlInsertSession = "INSERT INTO sessions (token_id, user_id,  expires_at) VALUES (?, ?,  UTC_TIMESTAMP() + INTERVAL 12 HOUR)";
+    const sqlInsertSession =
+      "INSERT INTO sessions (token_id, user_id,  expires_at) VALUES (?, ?,  UTC_TIMESTAMP() + INTERVAL 12 HOUR)";
     await pool.promise().query(sqlInsertSession, [tokenId, user.Id, expiresAt]);
 
     // res.cookie("token_id", tokenId, {
@@ -88,6 +96,7 @@ async function LoginUser(req, res) {
       user: {
         Id: user.Id,
         Batch: user.tbl_batch,
+        Phase: user.tbl_phase,
         Name: user.Name,
         Email_Id: user.Email_Id,
         Gender: user.Gender,
@@ -101,18 +110,23 @@ async function LoginUser(req, res) {
         User_DP: user.User_DP,
         DOB: user.DOB,
         Address: user.Address,
-        registration_time: user.registration_time
+        registration_time: user.registration_time,
       },
       auth: {
         token,
-        session: tokenId
+        session: tokenId,
       },
     });
-
   } catch (err) {
     console.error("Error processing login:", err.message);
-    return res.status(500).json({ success: false, message: "Error processing request", details: err.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error processing request",
+        details: err.message,
+      });
   }
 }
 
-module.exports = { LoginUser }; 
+module.exports = { LoginUser };

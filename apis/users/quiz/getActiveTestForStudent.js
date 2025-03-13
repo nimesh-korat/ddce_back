@@ -5,6 +5,9 @@ async function getActiveTestsForStudent(req, res) {
   const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
   const std_id = req?.user?.id;
   const batch_id = req?.user?.Batch;
+  const phase_id = req?.user?.Phase;
+  console.log(std_id, batch_id, phase_id);
+  
 
   if (!std_id || !batch_id) {
     return res
@@ -35,13 +38,15 @@ async function getActiveTestsForStudent(req, res) {
     LEFT JOIN tbl_test_questions ttq ON t.id = ttq.test_id
     LEFT JOIN tbl_questions q ON ttq.question_id = q.id
     LEFT JOIN tbl_final_result fr ON t.id = fr.test_id AND fr.std_id = ?
-    WHERE t.status = '1' AND ta.tbl_batch = ? AND ta.isFeatured = '1'
+    WHERE t.status = '1' AND ta.tbl_batch = ? AND ta.tbl_phase = ? AND ta.isFeatured = '1'
     GROUP BY t.id, ta.start_date, ta.end_date
     HAVING total_questions >= 5
 `;
 
     // Execute the query with student ID and batch ID as parameters
-    const [tests] = await pool.promise().query(sql, [std_id, batch_id]);
+    const [tests] = await pool
+      .promise()
+      .query(sql, [std_id, batch_id, phase_id]);
 
     if (tests.length === 0) {
       return res.status(404).json({
