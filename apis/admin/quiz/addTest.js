@@ -37,8 +37,7 @@ async function addTest(req, res) {
     !test_start_date ||
     !test_end_date ||
     !test_duration ||
-    !test_difficulty ||
-    !for_who
+    !test_difficulty
   ) {
     return res
       .status(400)
