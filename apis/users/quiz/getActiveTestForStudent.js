@@ -6,8 +6,6 @@ async function getActiveTestsForStudent(req, res) {
   const std_id = req?.user?.id;
   const batch_id = req?.user?.Batch;
   const phase_id = req?.user?.Phase;
-  console.log(std_id, batch_id, phase_id);
-  
 
   if (!std_id || !batch_id) {
     return res

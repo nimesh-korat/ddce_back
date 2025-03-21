@@ -1,45 +1,62 @@
-const pool = require("../../../db/dbConnect"); // Adjust the path to your dbConnect file
+const pool = require("../../../db/dbConnect");
+const { generateSignedUrl } = require("../../../utils/generateSignedUrl");
 
 async function registrationNotification(req, res) {
   try {
-    // SQL query to fetch users registered in the last 20 minutes, ordered by minutes_ago in ascending order (recent first)
+    const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
+
+    // SQL query to fetch users ordered by registration_time
     const sql = `
       SELECT  
         Name,  
         College_Name,
         Gender,
+        User_DP,
         DATE_FORMAT(registration_time, '%Y-%m-%d %H:%i:%s') AS registration_time 
       FROM users  
       WHERE College_Name IS NOT NULL
       ORDER BY registration_time DESC
     `;
 
-    // Execute the query using the connection pool
+    // Execute the query
     const [results] = await pool.promise().query(sql);
 
     if (results.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No users registered in the last 20 minutes.",
+        message: "No recent user registrations found.",
       });
     }
 
-    // Process results to format the time (e.g., "12 minutes ago")
-    const formattedResults = results.map((user) => ({
-      name: user.Name,
-      gender: user.Gender,
-      collegeName: user.College_Name,
-      timeAgo: `${user.registration_time}`,
-    }));
+    // Map results and generate signed URL for user_dp
+    const formattedResults = await Promise.all(
+      results.map(async (user) => {
+        const userDpPath = user.User_DP;
+        const signedUserDpUrl = userDpPath
+          ? generateSignedUrl(
+              `${cloudfrontDomain}/${userDpPath}`,
+              new Date(Date.now() + 1000 * 60 * 60 * 24) // 1-day expiry
+            )
+          : null;
 
-    // Get total users
+        return {
+          name: user.Name,
+          gender: user.Gender,
+          collegeName: user.College_Name,
+          timeAgo: user.registration_time,
+          userDp: signedUserDpUrl,
+        };
+      })
+    );
+
+    // Get total users count
     const [usersResult] = await pool
       .promise()
       .query(
         "SELECT COUNT(*) AS total_users FROM users WHERE College_Name IS NOT NULL"
       );
 
-    // Send the response with the formatted results
+    // Send response
     return res.status(200).json({
       success: true,
       data: formattedResults,
