@@ -112,6 +112,9 @@ const {
 const {
   getActiveScheduleForStudent,
 } = require("./apis/users/schedule/getActiveScheduleForStudent");
+const {
+  getDashboardCounts,
+} = require("./apis/users/dashboard/getDashboardCounts");
 require("dotenv").config();
 
 const app = express();
@@ -193,6 +196,7 @@ app.get(
 );
 app.get("/getSubjectWiseAnalysis", checkAuth, GetSubjectWiseAnalysis);
 app.get("/getActiveScheduleForStudent", checkAuth, getActiveScheduleForStudent);
+app.get("/getDashboardCounts", getDashboardCounts);
 
 //!Admin APIs
 app.post("/admin/login", LoginAdmin);

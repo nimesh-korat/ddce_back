@@ -6,7 +6,8 @@ async function registrationNotification(req, res) {
     const sql = `
       SELECT  
         Name,  
-        College_Name,  
+        College_Name,
+        Gender,
         DATE_FORMAT(registration_time, '%Y-%m-%d %H:%i:%s') AS registration_time 
       FROM users  
       WHERE College_Name IS NOT NULL
@@ -24,18 +25,26 @@ async function registrationNotification(req, res) {
     }
 
     // Process results to format the time (e.g., "12 minutes ago")
-    const formattedResults = results.map(user => ({
+    const formattedResults = results.map((user) => ({
       name: user.Name,
+      gender: user.Gender,
       collegeName: user.College_Name,
       timeAgo: `${user.registration_time}`,
     }));
+
+    // Get total users
+    const [usersResult] = await pool
+      .promise()
+      .query(
+        "SELECT COUNT(*) AS total_users FROM users WHERE College_Name IS NOT NULL"
+      );
 
     // Send the response with the formatted results
     return res.status(200).json({
       success: true,
       data: formattedResults,
+      totalUsers: usersResult[0].total_users + 1111,
     });
-
   } catch (err) {
     console.error("Error fetching recent users:", err.message);
     return res.status(500).json({
