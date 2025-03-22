@@ -78,10 +78,10 @@ async function LoginUser(req, res) {
 
     // Store the token in the sessions table
     const tokenId = uuidv4();
-    const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // Token expires in 12 hours 12 * 60 * 60 * 1000
+    const expiresAt = new Date(Date.now() + 10 * 1000); // 10 seconds from now
 
     const sqlInsertSession =
-      "INSERT INTO sessions (token_id, user_id,  expires_at) VALUES (?, ?,  UTC_TIMESTAMP() + INTERVAL 12 HOUR)";
+      "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 1 DAY)";
     await pool.promise().query(sqlInsertSession, [tokenId, user.Id, expiresAt]);
 
     // res.cookie("token_id", tokenId, {
@@ -119,13 +119,11 @@ async function LoginUser(req, res) {
     });
   } catch (err) {
     console.error("Error processing login:", err.message);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error processing request",
-        details: err.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error processing request",
+      details: err.message,
+    });
   }
 }
 

@@ -169,8 +169,8 @@ app.post("/verify_reset_pass_otp", verifyResetPassOtp);
 app.post("/change_password", checkAuth, changePassword);
 app.get("/getProfileDetails", checkAuth, GetProfileDetail);
 app.post("/getTest", checkAuth, getActiveTestsForStudent);
-app.get("/getSyllabus", GetSyllabus);
-app.get("/getSyllabusWithPaper", GetSyllabusWithPaper);
+app.get("/getSyllabus", checkAuth, GetSyllabus);
+app.get("/getSyllabusWithPaper", checkAuth, GetSyllabusWithPaper);
 app.post("/updatePersonalDetails", checkAuth, UpdateProfileDetail);
 app.post(
   "/updateProfilePic",
@@ -196,7 +196,7 @@ app.get(
 );
 app.get("/getSubjectWiseAnalysis", checkAuth, GetSubjectWiseAnalysis);
 app.get("/getActiveScheduleForStudent", checkAuth, getActiveScheduleForStudent);
-app.get("/getDashboardCounts", getDashboardCounts);
+app.get("/getDashboardCounts", checkAuth, getDashboardCounts);
 
 //!Admin APIs
 app.post("/admin/login", LoginAdmin);
@@ -220,24 +220,24 @@ app.post(
   AddParagraph
 );
 app.post("/admin/getParagraph", checkAuth, GetParagraph);
-app.get("/getSubjects", getSubjects);
-app.post("/getTopics", getTopic);
-app.post("/getSubTopics", getSubTopic);
-app.get("/admin/questions", getQuestions);
-app.post("/admin/getquestionsbyid", getQuestionsById);
-app.post("/admin/addBatchTitle", AddBatchTitle);
-app.post("/admin/assignTestToBatch", assignTestBatch);
-app.get("/admin/getAllBatch", getAllBatch);
-app.post("/admin/getTestWiseBatch", getTestWiseBatch);
-app.post("/admin/editAssignedTestToBatch", editTestBatch);
-app.post("/admin/updateIsFeatured", updateIsFeatured);
-app.post("/admin/addPhase", AddPhase);
-app.get("/admin/getPhase", getAllPhase);
+app.get("/getSubjects", checkAuth, getSubjects);
+app.post("/getTopics", checkAuth, getTopic);
+app.post("/getSubTopics", checkAuth, getSubTopic);
+app.get("/admin/questions", checkAuth, getQuestions);
+app.post("/admin/getquestionsbyid", checkAuth, getQuestionsById);
+app.post("/admin/addBatchTitle", checkAuth, AddBatchTitle);
+app.post("/admin/assignTestToBatch", checkAuth, assignTestBatch);
+app.get("/admin/getAllBatch", checkAuth, getAllBatch);
+app.post("/admin/getTestWiseBatch", checkAuth, getTestWiseBatch);
+app.post("/admin/editAssignedTestToBatch", checkAuth, editTestBatch);
+app.post("/admin/updateIsFeatured", checkAuth, updateIsFeatured);
+app.post("/admin/addPhase", checkAuth, AddPhase);
+app.get("/admin/getPhase", checkAuth, getAllPhase);
 app.post("/admin/addSession", checkAuth, AddSession);
-app.get("/admin/getSession", getAllSession);
-app.post("/admin/getSessionWiseBatch", getSessionWiseBatch);
-app.post("/admin/assignBatchToSession", assignBatchToSession);
-app.post("/admin/updateIsFeaturedSession", updateIsFeaturedSession);
+app.get("/admin/getSession", checkAuth, getAllSession);
+app.post("/admin/getSessionWiseBatch", checkAuth, getSessionWiseBatch);
+app.post("/admin/assignBatchToSession", checkAuth, assignBatchToSession);
+app.post("/admin/updateIsFeaturedSession", checkAuth, updateIsFeaturedSession);
 
 app.post(
   "/admin/addTest",
@@ -247,7 +247,7 @@ app.post(
 );
 app.post("/admin/addTestQuestions", checkAuth, addTestQuestions);
 app.post("/addStudentAnswer", checkAuth, addStudentAnswer);
-app.post("/addFinalResult", addFinalResult);
+app.post("/addFinalResult", checkAuth, addFinalResult);
 app.post("/admin/getQuestionsForTest", checkAuth, getQuestionsForTest);
 app.post(
   "/admin/getQuestionsForVerification",
@@ -255,8 +255,8 @@ app.post(
   getQuestionsForVerification
 );
 app.post("/admin/verifyQuestion", checkAuth, VerifyQuestion);
-app.get("/admin/getTests", getActiveTests);
-app.post("/admin/getAddedQuestionsInTest", getAddedQuestionsInTest);
+app.get("/admin/getTests", checkAuth, getActiveTests);
+app.post("/admin/getAddedQuestionsInTest", checkAuth, getAddedQuestionsInTest);
 app.post("/getTestQuestions", checkAuth, getTestQuestions);
 app.post("/getResultByStudent", checkAuth, getResultByStudent);
 
