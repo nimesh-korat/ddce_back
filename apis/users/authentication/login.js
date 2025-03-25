@@ -78,7 +78,7 @@ async function LoginUser(req, res) {
 
     // Store the token in the sessions table
     const tokenId = uuidv4();
-    const expiresAt = new Date(Date.now() + 10 * 1000); // 10 seconds from now
+    const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // Token expires in 1 day
 
     const sqlInsertSession =
       "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 1 DAY)";

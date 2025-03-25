@@ -25,6 +25,7 @@ async function getActiveTestsForStudent(req, res) {
         t.test_difficulty,
         t.test_duration,
         t.added_by,
+        t.isFake,
         t.status,
         COUNT(ttq.question_id) AS total_questions,
         COALESCE(SUM(q.question_marks), 0) AS total_marks,

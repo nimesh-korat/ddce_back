@@ -1,10 +1,10 @@
 const pool = require("../../../db/dbConnect");
 
 async function AddSession(req, res) {
-  const { description, for_who, link } = req.body;
+  const { description, for_who, link, isFake } = req.body;
 
   // Validate input fields
-  if (!description || !for_who || !link) {
+  if (!description || !for_who || !link || !isFake) {
     return res
       .status(400)
       .json({ success: false, message: "Missing required fields" });
@@ -20,10 +20,10 @@ async function AddSession(req, res) {
   }
 
   const sql = `
-        INSERT INTO tbl_session (description, for_who, link, is_active, created_by 	)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO tbl_session (description, for_who, link, is_active, isFake, created_by 	)
+        VALUES (?, ?, ?, ?, ?, ?)
     `;
-  const values = [description, for_who, link, "1", userId];
+  const values = [description, for_who, link, "1", isFake.toString(), userId];
 
   try {
     // Execute query using pool

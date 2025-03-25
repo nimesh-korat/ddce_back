@@ -18,7 +18,8 @@ async function getActiveScheduleForStudent(req, res) {
                   SELECT 
                 sa.start_date,
                 sa.end_date,
-                s.description AS description, 
+                s.description AS description,
+                s.isFake,
                 'Session' AS type,
                 s.for_who AS for_who,
                 s.link AS session_link
@@ -35,7 +36,8 @@ async function getActiveScheduleForStudent(req, res) {
             SELECT 
                 ta.start_date,
                 ta.end_date,
-                t.test_name AS description, 
+                t.test_name AS description,
+                t.isFake,
                 'Test' AS type,
                 t.for_who AS for_who,
                 NULL AS session_link  -- Add NULL to match columns
@@ -72,6 +74,7 @@ async function getActiveScheduleForStudent(req, res) {
       description: record.description,
       type: record.type,
       for_who: record.for_who,
+      isFake: record.isFake,
       session_link: record.session_link,
     }));
 

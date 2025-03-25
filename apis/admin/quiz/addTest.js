@@ -12,6 +12,7 @@ async function addTest(req, res) {
     test_duration,
     test_difficulty,
     for_who,
+    isFake,
   } = req.body;
 
   const added_by = req?.user.id;
@@ -34,10 +35,10 @@ async function addTest(req, res) {
     !test_name ||
     !test_desc ||
     !test_neg_marks ||
-    !test_start_date ||
-    !test_end_date ||
     !test_duration ||
-    !test_difficulty
+    !test_difficulty ||
+    !for_who ||
+    !isFake
   ) {
     return res
       .status(400)
@@ -45,15 +46,15 @@ async function addTest(req, res) {
   }
 
   // Convert the provided date strings into ISO format (needed for parseISO)
-  const isoStartDate = new Date(test_start_date).toISOString();
-  const isoEndDate = new Date(test_end_date).toISOString();
+  // const isoStartDate = new Date(test_start_date).toISOString();
+  // const isoEndDate = new Date(test_end_date).toISOString();
 
   // Format dates using date-fns
-  const formattedStartDate = format(
-    parseISO(isoStartDate),
-    "yyyy-MM-dd HH:mm:ss"
-  );
-  const formattedEndDate = format(parseISO(isoEndDate), "yyyy-MM-dd HH:mm:ss");
+  // const formattedStartDate = format(
+  //   parseISO(isoStartDate),
+  //   "yyyy-MM-dd HH:mm:ss"
+  // );
+  // const formattedEndDate = format(parseISO(isoEndDate), "yyyy-MM-dd HH:mm:ss");
 
   try {
     // Upload test image to S3
@@ -93,13 +94,12 @@ async function addTest(req, res) {
                 test_desc, 
                 test_img_path, 
                 test_neg_marks, 
-                test_start_date, 
-                test_end_date, 
                 test_duration,
                 test_difficulty,
                 for_who,
+                isFake,
                 added_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
     const values = [
@@ -107,11 +107,10 @@ async function addTest(req, res) {
       test_desc,
       fileKey, // Save the S3 file key or URL
       test_neg_marks,
-      formattedStartDate,
-      formattedEndDate,
       test_duration,
       newTestDifficulty,
       for_who,
+      isFake.toString(),
       added_by,
     ];
 
