@@ -23,7 +23,7 @@ async function LoginUser(req, res) {
     // If no user found with the provided email
     if (results.length === 0) {
       return res
-        .status(401)
+        .status(400)
         .json({ success: false, message: "Invalid email or password" });
     }
 
@@ -43,7 +43,7 @@ async function LoginUser(req, res) {
 
     if (!isPasswordValid) {
       return res
-        .status(401)
+        .status(400)
         .json({ success: false, message: "Invalid Phone or password" });
     }
     // Update expired sessions

@@ -8,7 +8,7 @@ async function GetTopicWiseQuestionAnalytics(req, res) {
         if (!studentId) {
             return res.status(401).json({
                 success: false,
-                message: "Unauthorized request",
+                message: "Unauthorized",
             });
         }
 

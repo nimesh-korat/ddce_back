@@ -54,10 +54,7 @@ async function SignupUser_s1(req, res) {
       // const emailResult = await sendEmail(Email_Id, "Your OTP for DDCET Registration", `Your OTP is: ${Email_OTP}`);
       // emailSuccess = emailResult.success;
 
-      const smsResult = await sendSMS(
-        `Your OTP is: ${Phone_OTP}`,
-        Phone_Number
-      );
+      const smsResult = await sendSMS(Phone_OTP, Phone_Number);
       smsSuccess = !!smsResult;
     } catch (error) {
       console.error("Error during OTP delivery:", error.message);

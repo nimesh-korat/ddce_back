@@ -162,7 +162,7 @@ async function addStudentAnswer(req, res) {
 async function addFinalResult(test_id, std_id) {
 
     if (!std_id) {
-        return res.status(401).json({ success: false, message: "Unauthorized" });
+        return res.status(400).json({ success: false, message: "Unauthorized" });
     }
     try {
         // Check if the result already exists

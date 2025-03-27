@@ -22,7 +22,7 @@ async function LoginAdmin(req, res) {
     // If no user found with the provided email
     if (results.length === 0) {
       return res
-        .status(401)
+        .status(400)
         .json({ success: false, message: "Invalid email or password" });
     }
 
@@ -34,7 +34,7 @@ async function LoginAdmin(req, res) {
 
     if (!isPasswordValid) {
       return res
-        .status(401)
+        .status(400)
         .json({ success: false, message: "Invalid email or password" });
     }
 
@@ -92,13 +92,11 @@ async function LoginAdmin(req, res) {
     });
   } catch (err) {
     console.error("Error processing login:", err.message);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error processing request",
-        details: err.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error processing request",
+      details: err.message,
+    });
   }
 }
 

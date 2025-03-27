@@ -19,7 +19,7 @@ async function verifyResetPassOtp(req, res) {
         const [results] = await pool.promise().query(sql, [user[0].Id, otp]);
 
         if (results.length === 0) {
-            return res.status(401).json({ success: false, message: "Invalid or expired OTP" });
+            return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
         }
 
         // OTP verified

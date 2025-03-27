@@ -33,13 +33,11 @@ const checkAuth = async (req, res, next) => {
     next(); // Proceed to the next middleware or route handler
   } catch (err) {
     console.error("Error during session verification:", err.message);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error",
-        details: err.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      details: err.message,
+    });
   }
 };
 
