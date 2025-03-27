@@ -38,7 +38,7 @@ async function GetSubjectWiseAnalysis(req, res) {
     LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id 
         AND sa.student_id = ?
     LEFT JOIN tbl_test_assigned ta ON tq.test_id = ta.tbl_test  -- Join with test assignments
-    WHERE ta.end_date >= NOW()  -- Filter out expired tests
+    WHERE ta.end_date < NOW()  -- ✅ Only include tests that have ended
     GROUP BY sub.Id;
 `;
 
@@ -64,7 +64,7 @@ async function GetSubjectWiseAnalysis(req, res) {
     LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id 
         AND sa.student_id = ?
     LEFT JOIN tbl_test_assigned ta ON tq.test_id = ta.tbl_test  -- Join with test assignments
-    WHERE ta.end_date >= NOW();  -- Filter out expired tests
+    WHERE ta.end_date < NOW();  -- ✅ Only include tests that have ended
 `;
 
     //! old queries
