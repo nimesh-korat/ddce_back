@@ -13,57 +13,61 @@ async function GetSubjectWiseAnalysis(req, res) {
 
     // SQL query for subject-wise analytics
     const subjectSql = `
-        SELECT
-            sub.Sub_Name AS subject_name,
-            COUNT(sa.question_id) AS total_questions_asked,
-            (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
-             SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END)) AS total_attempted,
-            SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) AS total_correct,
-            SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END) AS total_incorrect,
-            (COUNT(sa.question_id) - 
-             (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
-              SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END))) AS total_skipped,
-            ROUND(
-                (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) / 
+            SELECT
+                sub.Sub_Name AS subject_name,
+                COUNT(sa.question_id) AS total_questions_asked,
+                (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
+                 SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END)) AS total_attempted,
+                SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) AS total_correct,
+                SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END) AS total_incorrect,
+                (COUNT(sa.question_id) - 
                  (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
-                  SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END))) * 100,
-                2
-            ) AS accuracy
-        FROM
-            tbl_subject sub
-        LEFT JOIN tbl_topic t ON sub.Id = t.tbl_subject
-        LEFT JOIN tbl_subtopic st ON t.Id = st.tbl_topic
-        LEFT JOIN tbl_questions q ON st.Id = q.tbl_subtopic
-        LEFT JOIN tbl_test_questions tq ON q.id = tq.question_id
-        LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
-        LEFT JOIN tbl_test_assigned ta ON ta.tbl_test = tq.test_id
-        WHERE ta.end_date < NOW()  -- Filter for expired tests only
-        GROUP BY sub.Id;
-    `;
+                  SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END))) AS total_skipped,
+                ROUND(
+                    (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) / 
+                     NULLIF(
+                        (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
+                        SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END)), 0
+                     )
+                    ) * 100, 2
+                ) AS accuracy
+            FROM
+                tbl_subject sub
+            LEFT JOIN tbl_topic t ON sub.Id = t.tbl_subject
+            LEFT JOIN tbl_subtopic st ON t.Id = st.tbl_topic
+            LEFT JOIN tbl_questions q ON st.Id = q.tbl_subtopic
+            LEFT JOIN tbl_test_questions tq ON q.id = tq.question_id
+            LEFT JOIN tbl_test_assigned ta ON tq.tbl_test = ta.tbl_test
+            LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
+            WHERE ta.end_date < NOW() -- Only include expired tests
+            GROUP BY sub.Id;
+        `;
 
     // SQL query for overall analytics
     const overallSql = `
-        SELECT
-            COUNT(sa.question_id) AS total_questions_asked,
-            (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
-             SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END)) AS total_attempted,
-            SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) AS total_correct,
-            SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END) AS total_incorrect,
-            (COUNT(sa.question_id) - 
-             (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
-              SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END))) AS total_skipped,
-            ROUND(
-                (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) / 
+            SELECT
+                COUNT(sa.question_id) AS total_questions_asked,
+                (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
+                 SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END)) AS total_attempted,
+                SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) AS total_correct,
+                SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END) AS total_incorrect,
+                (COUNT(sa.question_id) - 
                  (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
-                  SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END))) * 100,
-                2
-            ) AS accuracy
-        FROM
-            tbl_test_questions tq
-        LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
-        LEFT JOIN tbl_test_assigned ta ON ta.tbl_test = tq.test_id
-        WHERE ta.end_date < NOW(); -- Only consider expired tests
-    `;
+                  SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END))) AS total_skipped,
+                ROUND(
+                    (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) / 
+                     NULLIF(
+                        (SUM(CASE WHEN sa.is_correct = "1" THEN 1 ELSE 0 END) + 
+                        SUM(CASE WHEN sa.is_correct = "0" THEN 1 ELSE 0 END)), 0
+                     )
+                    ) * 100, 2
+                ) AS accuracy
+            FROM
+                tbl_test_questions tq
+            LEFT JOIN tbl_test_assigned ta ON tq.tbl_test = ta.tbl_test
+            LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
+            WHERE ta.end_date < NOW(); -- Only include expired tests
+        `;
 
     //! old queries
     //     const subjectSql = `
