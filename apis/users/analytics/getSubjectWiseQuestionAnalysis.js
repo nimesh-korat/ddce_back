@@ -37,7 +37,7 @@ async function GetSubjectWiseAnalysis(req, res) {
             LEFT JOIN tbl_subtopic st ON t.Id = st.tbl_topic
             LEFT JOIN tbl_questions q ON st.Id = q.tbl_subtopic
             LEFT JOIN tbl_test_questions tq ON q.id = tq.question_id
-            LEFT JOIN tbl_test_assigned ta ON tq.tbl_test = ta.tbl_test
+            LEFT JOIN tbl_test_assigned ta ON tq.test_id = ta.tbl_test
             LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
             WHERE ta.end_date < NOW() -- Only include expired tests
             GROUP BY sub.Id;
@@ -64,7 +64,7 @@ async function GetSubjectWiseAnalysis(req, res) {
                 ) AS accuracy
             FROM
                 tbl_test_questions tq
-            LEFT JOIN tbl_test_assigned ta ON tq.tbl_test = ta.tbl_test
+            LEFT JOIN tbl_test_assigned ta ON tq.test_id = ta.tbl_test
             LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
             WHERE ta.end_date < NOW(); -- Only include expired tests
         `;
