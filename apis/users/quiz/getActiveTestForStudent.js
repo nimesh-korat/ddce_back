@@ -39,7 +39,7 @@ async function getActiveTestsForStudent(req, res) {
     LEFT JOIN tbl_final_result fr ON t.id = fr.test_id AND fr.std_id = ?
     WHERE t.status = '1' AND ta.tbl_batch = ? AND ta.tbl_phase = ? AND ta.isFeatured = '1'
     GROUP BY t.id, ta.start_date, ta.end_date
-    HAVING total_questions >= 0
+    HAVING total_questions >= 5
 `;
 
     // Execute the query with student ID and batch ID as parameters
