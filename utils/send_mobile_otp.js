@@ -29,13 +29,13 @@ require("dotenv").config();
 
 async function sendSMS(otp, toPhoneNumber) {
   try {
-    const message = `Dear User,\n\n${otp} is your One Time Password for mobile number verification.\nPlease do not share it with anyone.\n\n- INFOLABZ`;
+    const message = `Dear User,\n\n${otp}  is your One Time Password for mobile number verification of Unity Training Academy. Please do not share it with anyone.\nDeveloped by,\n\n- INFOLABZ`;
 
     const response = await axios.get("http://sms.hspsms.com/sendSMS", {
       params: {
-        username: process.env.SMS_USERNAME, // e.g., "infolabz"
+        username: process.env.SMS_USERNAME,
         message: message,
-        sendername: process.env.SMS_SENDERNAME, // e.g., "INUNIT"
+        sendername: process.env.SMS_SENDERNAME,
         smstype: "TRANS",
         numbers: toPhoneNumber,
         apikey: process.env.SMS_API_KEY,
