@@ -78,10 +78,10 @@ async function LoginUser(req, res) {
 
     // Store the token in the sessions table
     const tokenId = uuidv4();
-    const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // Token expires in 1 day
+    const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000); // Token expires in 4 hours
 
     const sqlInsertSession =
-      "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 1 DAY)";
+      "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 4 HOUR)";
     await pool.promise().query(sqlInsertSession, [tokenId, user.Id, expiresAt]);
 
     // res.cookie("token_id", tokenId, {

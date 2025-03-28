@@ -67,10 +67,10 @@ async function LoginAdmin(req, res) {
 
     // Store the token in the sessions table
     const tokenId = uuidv4();
-    const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // Token expires in 1 day
+    const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000); //
 
     const sqlInsertSession =
-      "INSERT INTO sessions (token_id, admin_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 1 DAY)";
+      "INSERT INTO sessions (token_id, admin_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 4 HOUR)";
     await pool
       .promise()
       .query(sqlInsertSession, [tokenId, admin.Id, expiresAt]); //changed from tokenId to token for temperory
