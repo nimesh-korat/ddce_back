@@ -50,7 +50,7 @@ async function getActiveScheduleForStudent(req, res) {
             AND ta.tbl_phase = ? 
             AND ta.isFeatured = '1'
             GROUP BY t.id, ta.start_date, ta.end_date
-            HAVING COUNT(ttq.question_id) >= 5
+            HAVING COUNT(ttq.question_id) >= 0
             ORDER BY start_date DESC;
     `;
 
