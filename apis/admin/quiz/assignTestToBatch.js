@@ -38,8 +38,8 @@ async function assignTestBatch(req, res) {
     }
 
     // Convert date strings to ISO format
-    const isoStartDate = new Date(start_date).toISOString();
-    const isoEndDate = new Date(end_date).toISOString();
+    const isoStartDate = new Date(start_date);
+    const isoEndDate = new Date(end_date);
 
     // Format dates using date-fns
     const formattedStartDate = format(
