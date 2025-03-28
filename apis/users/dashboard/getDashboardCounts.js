@@ -28,7 +28,7 @@ async function getDashboardCounts(req, res) {
         total_questions: questionsResult[0].total_questions + 9164,
         total_users: usersResult[0].total_users + 1111,
         total_completed_quizzes:
-          completedQuizzesResult[0].total_completed_quizzes + 291,
+          completedQuizzesResult[0].total_completed_quizzes + 276,
       },
     });
   } catch (error) {
