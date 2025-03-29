@@ -34,18 +34,23 @@ async function getActiveTestsForStudent(req, res) {
         ta.end_date
     FROM tbl_test_assigned ta
     INNER JOIN tbl_test t ON ta.tbl_test = t.id
+    INNER JOIN users u ON u.Id = ?  -- Fetch user's registration_time
     LEFT JOIN tbl_test_questions ttq ON t.id = ttq.test_id
     LEFT JOIN tbl_questions q ON ttq.question_id = q.id
     LEFT JOIN tbl_final_result fr ON t.id = fr.test_id AND fr.std_id = ?
-    WHERE t.status = '1' AND ta.tbl_batch = ? AND ta.tbl_phase = ? AND ta.isFeatured = '1'
+    WHERE t.status = '1' 
+      AND ta.tbl_batch = ? 
+      AND ta.tbl_phase = ? 
+      AND ta.isFeatured = '1'
+      AND ta.end_date > u.registration_time  -- Filter based on registration date
     GROUP BY t.id, ta.start_date, ta.end_date
-    HAVING total_questions >= 5
-`;
+    HAVING total_questions >= 0
+    `;
 
     // Execute the query with student ID and batch ID as parameters
     const [tests] = await pool
       .promise()
-      .query(sql, [std_id, batch_id, phase_id]);
+      .query(sql, [std_id, std_id, batch_id, phase_id]);
 
     if (tests.length === 0) {
       return res.status(404).json({
