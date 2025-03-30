@@ -15,10 +15,16 @@ async function SignupUser_s1(req, res) {
   }
 
   try {
-    // Check if email or phone number already exists
+    // Check if email or phone number already exists based on conditions
     const sqlCheck = `
-            SELECT * FROM users WHERE Email_Id = ? OR Phone_Number = ?
-        `;
+    SELECT * FROM users 
+    WHERE (Email_Id = ? OR Phone_Number = ?) 
+    AND Enrollment_No IS NOT NULL 
+    AND College_Name IS NOT NULL 
+    AND Branch_Name IS NOT NULL 
+    AND Semester IS NOT NULL
+`;
+
     const [existingUser] = await pool
       .promise()
       .query(sqlCheck, [Email_Id, Phone_Number]);
