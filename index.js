@@ -115,6 +115,10 @@ const {
 const {
   getDashboardCounts,
 } = require("./apis/users/dashboard/getDashboardCounts");
+const {
+  getUsersWithExamData,
+} = require("./apis/admin/fetchStudentsData/getStudentsWithExamData");
+const { getTestNames } = require("./apis/admin/fetchStudentsData/getTestName");
 require("dotenv").config();
 
 const app = express();
@@ -259,6 +263,12 @@ app.get("/admin/getTests", checkAuth, getActiveTests);
 app.post("/admin/getAddedQuestionsInTest", checkAuth, getAddedQuestionsInTest);
 app.post("/getTestQuestions", checkAuth, getTestQuestions);
 app.post("/getResultByStudent", checkAuth, getResultByStudent);
+app.get(
+  "/admin/getUsersWithExamData/:test_id",
+  checkAuth,
+  getUsersWithExamData
+);
+app.get("/admin/getTestNames", checkAuth, getTestNames);
 
 //?activate server
 app.listen(PORT, () => {
