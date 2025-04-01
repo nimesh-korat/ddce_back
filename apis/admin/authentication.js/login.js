@@ -54,11 +54,11 @@ async function LoginAdmin(req, res) {
       .promise()
       .query(sqlCheckActiveSessions, [admin.Id]);
 
-    if (activeSessions.length >= 1) {
+    if (activeSessions.length >= 5) {
       return res.status(403).json({
         success: false,
         message:
-          "You can only be logged in on one devices simultaneously. Please log out from one device to log in to a new device.",
+          "You can only be logged in on one devices simultaneously. Please log out from five device to log in to a new device.",
       });
     }
 
