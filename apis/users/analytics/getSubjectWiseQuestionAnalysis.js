@@ -3,6 +3,8 @@ const pool = require("../../../db/dbConnect");
 async function GetSubjectWiseAnalysis(req, res) {
   try {
     const studentId = req?.user?.id;
+    const batch_id = req?.user?.Batch;
+    const phase_id = req?.user?.Phase;
 
     if (!studentId) {
       return res.status(400).json({
@@ -40,6 +42,8 @@ async function GetSubjectWiseAnalysis(req, res) {
             LEFT JOIN tbl_test_assigned ta ON tq.test_id = ta.tbl_test
             LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
             WHERE ta.end_date < NOW() -- Only include expired tests
+    AND ta.tbl_batch = ? 
+    AND ta.tbl_phase = ?
             GROUP BY sub.Id;
         `;
 
@@ -66,7 +70,9 @@ async function GetSubjectWiseAnalysis(req, res) {
                 tbl_test_questions tq
             LEFT JOIN tbl_test_assigned ta ON tq.test_id = ta.tbl_test
             LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
-            WHERE ta.end_date < NOW(); -- Only include expired tests
+            WHERE ta.end_date < NOW()
+    AND ta.tbl_batch = ?
+    AND ta.tbl_phase = ?; -- Only include expired tests
         `;
 
     //! old queries
@@ -112,10 +118,11 @@ async function GetSubjectWiseAnalysis(req, res) {
     // Execute the queries
     const [subjectResults] = await pool
       .promise()
-      .query(subjectSql, [studentId]);
+      .query(subjectSql, [studentId, batch_id, phase_id]);
+
     const [overallResults] = await pool
       .promise()
-      .query(overallSql, [studentId]);
+      .query(overallSql, [studentId, batch_id, phase_id]);
 
     // Transform subject results into the desired structure
     const formattedSubjectResults = subjectResults.map((row) => ({
