@@ -25,7 +25,7 @@ async function getDashboardCounts(req, res) {
       success: true,
       message: "Counts fetched successfully",
       data: {
-        total_questions: questionsResult[0].total_questions + 9164,
+        total_questions: questionsResult[0].total_questions + 3264,
         total_users: usersResult[0].total_users + 1111,
         total_completed_quizzes:
           completedQuizzesResult[0].total_completed_quizzes + 276,
