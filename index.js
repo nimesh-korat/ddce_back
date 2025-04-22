@@ -119,6 +119,9 @@ const {
   getUsersWithExamData,
 } = require("./apis/admin/fetchStudentsData/getStudentsWithExamData");
 const { getTestNames } = require("./apis/admin/fetchStudentsData/getTestName");
+const {
+  getStudentsWiseExamData,
+} = require("./apis/admin/fetchStudentsData/getStudentWiseExamData");
 require("dotenv").config();
 
 const app = express();
@@ -268,6 +271,7 @@ app.get(
   checkAuth,
   getUsersWithExamData
 );
+app.get("/admin/getStudentWiseExamData", checkAuth, getStudentsWiseExamData);
 app.get("/admin/getTestNames", checkAuth, getTestNames);
 
 //?activate server
