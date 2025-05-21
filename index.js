@@ -122,6 +122,10 @@ const { getTestNames } = require("./apis/admin/fetchStudentsData/getTestName");
 const {
   getStudentsWiseExamData,
 } = require("./apis/admin/fetchStudentsData/getStudentWiseExamData");
+const {
+  DdcetRankPredict,
+} = require("./apis/users/ddcetCollegePrediction/ddcet_rank_predict");
+const { getColleges } = require("./apis/users/collegeAndBranch/getColleges");
 require("dotenv").config();
 
 const app = express();
@@ -204,6 +208,8 @@ app.get(
 app.get("/getSubjectWiseAnalysis", checkAuth, GetSubjectWiseAnalysis);
 app.get("/getActiveScheduleForStudent", checkAuth, getActiveScheduleForStudent);
 app.get("/getDashboardCounts", checkAuth, getDashboardCounts);
+app.post("/ddcetRankPredict", DdcetRankPredict);
+app.get("/getColleges", getColleges);
 
 //!Admin APIs
 app.post("/admin/login", LoginAdmin);
