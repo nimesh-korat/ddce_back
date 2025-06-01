@@ -1,6 +1,5 @@
 const pool = require("../../../db/dbConnect"); // Adjust the path to your dbConnect file
 const bcrypt = require("bcrypt");
-const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { generateToken } = require("../../../utils/jwt");
@@ -46,43 +45,20 @@ async function LoginUser(req, res) {
         .status(400)
         .json({ success: false, message: "Invalid Phone or password" });
     }
-    // Update expired sessions
-    const sqlUpdateExpiredSessions = `
-    UPDATE sessions 
-    SET status = 'revoked'
-    WHERE user_id = ? 
-    AND status = 'active' 
-    AND expires_at <= UTC_TIMESTAMP()`;
-    await pool.promise().query(sqlUpdateExpiredSessions, [user.Id]);
 
-    // Check how many active sessions the user already has
-    const sqlCheckActiveSessions = `
-    SELECT * 
-    FROM sessions 
-    WHERE user_id = ? 
-    AND status = 'active' 
-    AND expires_at > UTC_TIMESTAMP()`;
-    const [activeSessions] = await pool
-      .promise()
-      .query(sqlCheckActiveSessions, [user.Id]);
+    // Revoke all active sessions
+    await pool.promise().query(
+      `UPDATE sessions SET status = 'revoked' 
+       WHERE user_id = ? AND status = 'active'`,
+      [user.Id]
+    );
 
-    if (activeSessions.length >= 2) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only be logged in on two devices simultaneously.",
-      });
-    }
-
-    // Generate a JWT token
-    const token = generateToken(user);
-
-    // Store the token in the sessions table
-    const tokenId = uuidv4();
-    const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000); // Token expires in 4 hours
+    // Generate token with embedded tokenId
+    const { token, tokenId } = generateToken(user);
 
     const sqlInsertSession =
       "INSERT INTO sessions (token_id, user_id, expires_at) VALUES (?, ?, UTC_TIMESTAMP() + INTERVAL 4 HOUR)";
-    await pool.promise().query(sqlInsertSession, [tokenId, user.Id, expiresAt]);
+    await pool.promise().query(sqlInsertSession, [tokenId, user.Id]);
 
     // res.cookie("token_id", tokenId, {
     //   httpOnly: true,

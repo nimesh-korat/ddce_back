@@ -3,7 +3,7 @@ const { verifyToken } = require("../utils/jwt");
 
 // Middleware to check JWT token
 const checkAuth = async (req, res, next) => {
-  const token = req.header("Authorization")?.replace("Bearer ", ""); // Get token from Authorization header
+  const token = req.header("Authorization")?.replace("Bearer ", "");
 
   if (!token) {
     return res
@@ -12,25 +12,38 @@ const checkAuth = async (req, res, next) => {
   }
 
   try {
-    // Verify the JWT token
     const decoded = verifyToken(token);
 
-    if (!decoded) {
+    if (!decoded || !decoded.tokenId) {
       return res
         .status(401)
         .json({ success: false, message: "Invalid or expired token" });
     }
 
-    // // Check if the token ID exists and is still active in the database
-    // const sql = "SELECT * FROM sessions WHERE token_id = ? AND status = 'active' AND expires_at > UTC_TIMESTAMP()";
-    // const [session] = await pool.promise().query(sql, [token]); //changed from tokenId to token for temperory
+    // Check session in database using only tokenId
+    const [session] = await pool.promise().query(
+      `SELECT 1 FROM sessions 
+       WHERE token_id = ? 
+       AND status = 'active' 
+       AND expires_at > UTC_TIMESTAMP()`,
+      [decoded.tokenId]
+    );
 
-    // if (session.length === 0) {
-    //     return res.status(401).json({ success: false, message: "Session expired or revoked" });
-    // }
+    if (!session.length) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Session expired or revoked" });
+    }
 
-    req.user = decoded; // Attach user info to the request object
-    next(); // Proceed to the next middleware or route handler
+    // Verify token expiration from payload
+    if (decoded.exp < Date.now() / 1000) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Session expired" });
+    }
+
+    req.user = decoded;
+    next();
   } catch (err) {
     console.error("Error during session verification:", err.message);
     return res.status(500).json({
