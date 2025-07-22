@@ -63,7 +63,7 @@ async function LoginAdmin(req, res) {
     }
 
     // Generate a JWT token
-    const token = generateToken(admin);
+    const { token } = generateToken(admin);
 
     // Store the token in the sessions table
     const tokenId = uuidv4();
