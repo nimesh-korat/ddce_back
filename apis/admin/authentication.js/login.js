@@ -63,10 +63,10 @@ async function LoginAdmin(req, res) {
     }
 
     // Generate a JWT token
-    const { token } = generateToken(admin);
+    const { token, tokenId } = generateToken(admin);
 
     // Store the token in the sessions table
-    const tokenId = uuidv4();
+    // const tokenId = uuidv4();
     const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000); //
 
     const sqlInsertSession =
