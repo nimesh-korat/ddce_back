@@ -126,6 +126,33 @@ const {
   DdcetRankPredict,
 } = require("./apis/users/ddcetCollegePrediction/ddcet_rank_predict");
 const { getColleges } = require("./apis/users/collegeAndBranch/getColleges");
+
+// New imports — Dashboard, Materials, Edit/Delete
+const {
+  getAdminDashboardStats,
+} = require("./apis/admin/dashboard/getAdminDashboardStats");
+const { addMaterial } = require("./apis/admin/materials/addMaterial");
+const { getMaterials } = require("./apis/admin/materials/getMaterials");
+const { updateMaterial } = require("./apis/admin/materials/updateMaterial");
+const { deleteMaterial } = require("./apis/admin/materials/deleteMaterial");
+const { getUserMaterials } = require("./apis/users/materials/getMaterials");
+const { updateQuestion } = require("./apis/admin/questions/updateQuestion");
+const { deleteQuestion } = require("./apis/admin/questions/deleteQuestion");
+const { updateTest } = require("./apis/admin/quiz/updateTest");
+const { deleteTest } = require("./apis/admin/quiz/deleteTest");
+const { deleteTestQuestion } = require("./apis/admin/quiz/deleteTestQuestion");
+const { updateBatch } = require("./apis/admin/batch/updateBatch");
+const { deleteBatch } = require("./apis/admin/batch/deleteBatch");
+const { updateSession } = require("./apis/admin/session/updateSession");
+const { deleteSession } = require("./apis/admin/session/deleteSession");
+const {
+  deleteTestBatchAssignment,
+} = require("./apis/admin/quiz/deleteTestBatchAssignment");
+
+const {
+  toggleSolutionVisibility,
+} = require("./apis/admin/materials/toggleSolutionVisibility");
+
 require("dotenv").config();
 
 const app = express();
@@ -146,20 +173,20 @@ app.use(
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-  })
+  }),
 );
 
 app.use(
   "/uploads/images/test_images",
-  express.static("uploads/images/test_imgs")
+  express.static("uploads/images/test_imgs"),
 );
 app.use(
   "/uploads/images/question_imgs",
-  express.static("upload/images/question_imgs")
+  express.static("upload/images/question_imgs"),
 );
 app.use(
   "/uploads/images/profile_imgs",
-  express.static("uploads/images/profile_imgs")
+  express.static("uploads/images/profile_imgs"),
 );
 app.use((req, res, next) => {
   //?Removing the first part of the url for nginx
@@ -187,7 +214,7 @@ app.post(
   "/updateProfilePic",
   checkAuth,
   uploadImg.single("User_DP"),
-  UpdateProfilePic
+  UpdateProfilePic,
 );
 app.get("/getProfileImage", checkAuth, GetProfileImage);
 app.post("/updateAcademicDetails", checkAuth, UpdateAcademicDetail);
@@ -198,12 +225,12 @@ app.get("/getRecentRegNotifications", registrationNotification);
 app.get(
   "/getTopicWiseQuestionAnalytics",
   checkAuth,
-  GetTopicWiseQuestionAnalytics
+  GetTopicWiseQuestionAnalytics,
 );
 app.get(
   "/getSubTopicWiseQuestionAnalytics",
   checkAuth,
-  GetSubTopicWiseQuestionAnalytics
+  GetSubTopicWiseQuestionAnalytics,
 );
 app.get("/getSubjectWiseAnalysis", checkAuth, GetSubjectWiseAnalysis);
 app.get("/getActiveScheduleForStudent", checkAuth, getActiveScheduleForStudent);
@@ -224,13 +251,13 @@ app.post(
     { name: "option_d_image", maxCount: 1 },
     { name: "answer_image", maxCount: 1 },
   ]),
-  AddQuestions
+  AddQuestions,
 );
 app.post(
   "/admin/addParagraph",
   checkAuth,
   uploadImg.single("paragraph_img"),
-  AddParagraph
+  AddParagraph,
 );
 app.post("/admin/getParagraph", checkAuth, GetParagraph);
 app.get("/getSubjects", checkAuth, getSubjects);
@@ -256,7 +283,7 @@ app.post(
   "/admin/addTest",
   checkAuth,
   uploadImg.single("test_img_path"),
-  addTest
+  addTest,
 );
 app.post("/admin/addTestQuestions", checkAuth, addTestQuestions);
 app.post("/addStudentAnswer", checkAuth, addStudentAnswer);
@@ -265,7 +292,7 @@ app.post("/admin/getQuestionsForTest", checkAuth, getQuestionsForTest);
 app.post(
   "/admin/getQuestionsForVerification",
   checkAuth,
-  getQuestionsForVerification
+  getQuestionsForVerification,
 );
 app.post("/admin/verifyQuestion", checkAuth, VerifyQuestion);
 app.get("/admin/getTests", checkAuth, getActiveTests);
@@ -275,10 +302,85 @@ app.post("/getResultByStudent", checkAuth, getResultByStudent);
 app.get(
   "/admin/getUsersWithExamData/:test_id",
   checkAuth,
-  getUsersWithExamData
+  getUsersWithExamData,
 );
 app.get("/admin/getStudentWiseExamData", checkAuth, getStudentsWiseExamData);
 app.get("/admin/getTestNames", checkAuth, getTestNames);
+
+//! New Routes — Dashboard, Materials, Edit/Delete
+// Admin Dashboard
+app.get("/admin/dashboardStats", checkAuth, getAdminDashboardStats);
+
+// Materials — Admin
+app.post(
+  "/admin/materials",
+  checkAuth,
+  uploadImg.fields([
+    { name: "material_file", maxCount: 1 },
+    { name: "solution_file", maxCount: 1 },
+  ]),
+  addMaterial,
+);
+app.get("/admin/materials", checkAuth, getMaterials);
+app.put(
+  "/admin/materials/:id",
+  checkAuth,
+  uploadImg.fields([
+    { name: "material_file", maxCount: 1 },
+    { name: "solution_file", maxCount: 1 },
+  ]),
+  updateMaterial,
+);
+app.delete("/admin/materials/:id", checkAuth, deleteMaterial);
+app.put(
+  "/admin/materials/:id/toggleSolution",
+  checkAuth,
+  toggleSolutionVisibility,
+);
+
+// Materials — User
+app.get("/materials", checkAuth, getUserMaterials);
+
+// Questions — Edit / Delete
+app.put(
+  "/admin/questions/:id",
+  checkAuth,
+  uploadImg.fields([
+    { name: "question_image", maxCount: 1 },
+    { name: "answer_image", maxCount: 1 },
+  ]),
+  updateQuestion,
+);
+app.delete("/admin/questions/:id", checkAuth, deleteQuestion);
+
+// Tests — Edit / Delete
+app.put(
+  "/admin/tests/:id",
+  checkAuth,
+  uploadImg.single("test_img_path"),
+  updateTest,
+);
+app.delete("/admin/tests/:id", checkAuth, deleteTest);
+
+// Test Questions — Remove question from test
+app.delete(
+  "/admin/tests/:test_id/questions/:question_id",
+  checkAuth,
+  deleteTestQuestion,
+);
+
+// Batch — Edit / Delete
+app.put("/admin/batch/:id", checkAuth, updateBatch);
+app.delete("/admin/batch/:id", checkAuth, deleteBatch);
+
+// Session — Edit / Delete
+app.put("/admin/session/:id", checkAuth, updateSession);
+app.delete("/admin/session/:id", checkAuth, deleteSession);
+app.delete(
+  "/admin/testBatchAssignment/:id",
+  checkAuth,
+  deleteTestBatchAssignment,
+);
 
 //?activate server
 app.listen(PORT, () => {

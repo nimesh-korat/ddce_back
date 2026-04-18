@@ -12,7 +12,7 @@ async function getQuestions(req, res) {
         const offset = (page - 1) * limit;
 
         // Query to get the total count of questions
-        const countSql = `SELECT COUNT(*) AS total FROM tbl_questions`;
+        const countSql = `SELECT COUNT(*) AS total FROM tbl_questions WHERE is_deleted = 0`;
         const [countResult] = await pool.promise().query(countSql);
         const totalQuestions = countResult[0].total;
 
@@ -27,6 +27,7 @@ async function getQuestions(req, res) {
         const sql = `
             WITH ranked_questions AS (
                 SELECT 
+                    id,
                     question_text,
                     question_image,
                     option_a_text, 
@@ -37,10 +38,13 @@ async function getQuestions(req, res) {
                     option_b_image,
                     option_c_image,
                     option_d_image,
-                    answer_text, 
+                    answer_text,
+                    question_marks,
+                    question_difficulty,
                     tbl_subtopic,
                     ROW_NUMBER() OVER (PARTITION BY tbl_subtopic ORDER BY id) AS subtopic_rank
                 FROM tbl_questions
+                WHERE is_deleted = 0
             )
             SELECT *
             FROM ranked_questions
