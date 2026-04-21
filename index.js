@@ -146,6 +146,9 @@ const { deleteBatch } = require("./apis/admin/batch/deleteBatch");
 const { updateSession } = require("./apis/admin/session/updateSession");
 const { deleteSession } = require("./apis/admin/session/deleteSession");
 const {
+  editSessionBatchAssignment,
+} = require("./apis/admin/session/editSessionBatchAssignment");
+const {
   deleteTestBatchAssignment,
 } = require("./apis/admin/quiz/deleteTestBatchAssignment");
 
@@ -170,7 +173,6 @@ app.use(
       "http://192.168.0.19:3000",
       process.env.FRONTEND_URL,
       process.env.FRONTEND_URL_2,
-      process.env.FRONTEND_URL_3,
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
@@ -377,6 +379,11 @@ app.delete("/admin/batch/:id", checkAuth, deleteBatch);
 // Session — Edit / Delete
 app.put("/admin/session/:id", checkAuth, updateSession);
 app.delete("/admin/session/:id", checkAuth, deleteSession);
+app.post(
+  "/admin/editSessionBatchAssignment",
+  checkAuth,
+  editSessionBatchAssignment,
+);
 app.delete(
   "/admin/testBatchAssignment/:id",
   checkAuth,
