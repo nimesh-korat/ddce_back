@@ -29,7 +29,7 @@ require("dotenv").config();
 
 async function sendSMS(otp, toPhoneNumber) {
   try {
-    const message = `Dear User,\n\n${otp}  is your One Time Password for mobile number verification of Unity Training Academy. Please do not share it with anyone.\nDeveloped by,\n\n- INFOLABZ`;
+    const message = `Dear User,\n\n${otp}  is your One Time Password for mobile number verification of DDCET Preparation portal. Please do not share it with anyone.\nDeveloped by,\n\n- INFOLABZ IT Services Pvt. Ltd.`;
 
     const response = await axios.get("http://sms.hspsms.com/sendSMS", {
       params: {
