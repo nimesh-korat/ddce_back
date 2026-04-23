@@ -77,7 +77,7 @@ async function SignupUser_s1(req, res) {
         `;
     const values = [
       1,
-      2,
+      3,
       Name,
       Email_Id,
       0,
