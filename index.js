@@ -155,6 +155,43 @@ const {
 const {
   toggleSolutionVisibility,
 } = require("./apis/admin/materials/toggleSolutionVisibility");
+const { LoginMentor } = require("./apis/mentor/authentication/login");
+
+// Mentor + Practice imports
+const checkMentorOrAdmin = require("./middleware/checkMentorOrAdmin");
+const {
+  getMentorQuestions,
+} = require("./apis/mentor/questions/getMentorQuestions");
+const {
+  updateMentorQuestion,
+} = require("./apis/mentor/questions/updateMentorQuestion");
+const {
+  deleteMentorQuestion,
+} = require("./apis/mentor/questions/deleteMentorQuestion");
+const {
+  createPracticeAssignment,
+} = require("./apis/practice/createPracticeAssignment");
+const {
+  getMyPracticeAssignments,
+} = require("./apis/practice/getMyPracticeAssignments");
+const {
+  deletePracticeAssignment,
+} = require("./apis/practice/deletePracticeAssignment");
+const {
+  getQuestionsForPractice,
+} = require("./apis/practice/getQuestionsForPractice");
+const { getMentorsList } = require("./apis/practice/getMentorsList");
+const {
+  getNextPracticeQuestion,
+} = require("./apis/practice/getNextPracticeQuestion");
+const {
+  submitPracticeAnswer,
+} = require("./apis/practice/submitPracticeAnswer");
+const {
+  getWrongPracticeAnswers,
+} = require("./apis/practice/getWrongPracticeAnswers");
+const { getPracticeAccuracy } = require("./apis/practice/getPracticeAccuracy");
+const { getPracticeStats } = require("./apis/practice/getPracticeStats");
 
 require("dotenv").config();
 
@@ -309,6 +346,72 @@ app.get(
 );
 app.get("/admin/getStudentWiseExamData", checkAuth, getStudentsWiseExamData);
 app.get("/admin/getTestNames", checkAuth, getTestNames);
+
+//! MENTOR APIs
+app.post("/mentor/login", LoginMentor);
+
+// Mentor — Add Question (reuses admin AddQuestions handler)
+app.post(
+  "/mentor/addQuestion",
+  checkAuth,
+  uploadImg.fields([
+    { name: "question_image", maxCount: 1 },
+    { name: "option_a_image", maxCount: 1 },
+    { name: "option_b_image", maxCount: 1 },
+    { name: "option_c_image", maxCount: 1 },
+    { name: "option_d_image", maxCount: 1 },
+    { name: "answer_image", maxCount: 1 },
+  ]),
+  AddQuestions,
+);
+
+// Mentor — My Questions CRUD
+app.get("/mentor/questions", checkAuth, getMentorQuestions);
+app.put(
+  "/mentor/questions/:id",
+  checkAuth,
+  uploadImg.fields([
+    { name: "question_image", maxCount: 1 },
+    { name: "answer_image", maxCount: 1 },
+  ]),
+  updateMentorQuestion,
+);
+app.delete("/mentor/questions/:id", checkAuth, deleteMentorQuestion);
+
+//! PRACTICE APIs (admin + mentor assign; student attempts)
+// Admin / Mentor side
+app.post(
+  "/practice/assign",
+  checkAuth,
+  checkMentorOrAdmin,
+  createPracticeAssignment,
+);
+app.get(
+  "/practice/assignments",
+  checkAuth,
+  checkMentorOrAdmin,
+  getMyPracticeAssignments,
+);
+app.delete(
+  "/practice/assignments/:id",
+  checkAuth,
+  checkMentorOrAdmin,
+  deletePracticeAssignment,
+);
+app.get(
+  "/practice/questions-pool",
+  checkAuth,
+  checkMentorOrAdmin,
+  getQuestionsForPractice,
+);
+app.get("/practice/mentors", checkAuth, getMentorsList);
+
+// Student side
+app.get("/practice/next", checkAuth, getNextPracticeQuestion);
+app.post("/practice/answer", checkAuth, submitPracticeAnswer);
+app.get("/practice/wrong", checkAuth, getWrongPracticeAnswers);
+app.get("/practice/stats", checkAuth, getPracticeStats);
+app.get("/practice/accuracy", checkAuth, getPracticeAccuracy);
 
 //! New Routes — Dashboard, Materials, Edit/Delete
 // Admin Dashboard
