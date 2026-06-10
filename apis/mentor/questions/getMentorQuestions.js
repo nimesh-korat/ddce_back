@@ -64,7 +64,7 @@ async function getMentorQuestions(req, res) {
         q.added_on, q.prevAskedPaper, q.prevAskedYear, q.fromBook,
         sub.Id AS subject_id, sub.Sub_Name AS subject_name,
         t.Topic_Name AS topic_name,
-        st.Sub_Topic_Name AS subtopic_name
+        st.SubTopicName AS subtopic_name
       FROM tbl_questions q
       LEFT JOIN tbl_subtopic st ON q.tbl_subtopic = st.Id
       LEFT JOIN tbl_topic t ON st.tbl_topic = t.Id

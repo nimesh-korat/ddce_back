@@ -192,6 +192,21 @@ const {
 } = require("./apis/practice/getWrongPracticeAnswers");
 const { getPracticeAccuracy } = require("./apis/practice/getPracticeAccuracy");
 const { getPracticeStats } = require("./apis/practice/getPracticeStats");
+const {
+  getStudentPracticeSets,
+} = require("./apis/practice/getStudentPracticeSets");
+// const {
+//   assignPracticeToBatch,
+// } = require("./apis/practice/assignPracticeToBatch");
+// const {
+//   editPracticeBatchAssignment,
+// } = require("./apis/practice/editPracticeBatchAssignment");
+// const {
+//   togglePracticeVisibility,
+// } = require("./apis/practice/togglePracticeVisibility");
+// const {
+//   deletePracticeBatchAssignment,
+// } = require("./apis/practice/deletePracticeBatchAssignment");
 
 require("dotenv").config();
 
@@ -411,7 +426,34 @@ app.get("/practice/next", checkAuth, getNextPracticeQuestion);
 app.post("/practice/answer", checkAuth, submitPracticeAnswer);
 app.get("/practice/wrong", checkAuth, getWrongPracticeAnswers);
 app.get("/practice/stats", checkAuth, getPracticeStats);
+app.get("/practice/sets", checkAuth, getStudentPracticeSets);
 app.get("/practice/accuracy", checkAuth, getPracticeAccuracy);
+
+// Practice — Batch Assignment (assign one practice to multiple batches)
+// app.post(
+//   "/practice/batch-assign",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   assignPracticeToBatch,
+// );
+// app.put(
+//   "/practice/batch-assign/:id",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   editPracticeBatchAssignment,
+// );
+// app.put(
+//   "/practice/batch-assign/:id/toggle",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   togglePracticeVisibility,
+// );
+// app.delete(
+//   "/practice/batch-assign/:id",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   deletePracticeBatchAssignment,
+// );
 
 //! New Routes — Dashboard, Materials, Edit/Delete
 // Admin Dashboard
