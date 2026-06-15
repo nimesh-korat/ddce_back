@@ -209,18 +209,18 @@ const {
 const {
   togglePracticeFeatured,
 } = require("./apis/practice/togglePracticeFeatured");
-const {
-  togglePracticeVisibility,
-} = require("./apis/practice/togglePracticeVisibility");
-const {
-  editPracticeBatchAssignment,
-} = require("./apis/practice/editPracticeBatchAssignment");
-const {
-  deletePracticeBatchAssignment,
-} = require("./apis/practice/deletePracticeBatchAssignment");
-const {
-  assignPracticeToBatch,
-} = require("./apis/practice/assignPracticeToBatch");
+// const {
+//   togglePracticeVisibility,
+// } = require("./apis/practice/togglePracticeVisibility");
+// const {
+//   editPracticeBatchAssignment,
+// } = require("./apis/practice/editPracticeBatchAssignment");
+// const {
+//   deletePracticeBatchAssignment,
+// } = require("./apis/practice/deletePracticeBatchAssignment");
+// const {
+//   assignPracticeToBatch,
+// } = require("./apis/practice/assignPracticeToBatch");
 
 require("dotenv").config();
 
@@ -486,36 +486,36 @@ app.delete(
   checkMentorOrAdmin,
   deletePracticeAssignment,
 );
-app.put(
-  "/practice/batch-assign/:id",
-  checkAuth,
-  checkMentorOrAdmin,
-  editPracticeBatchAssignment,
-);
-app.delete(
-  "/practice/batch-assign/:id",
-  checkAuth,
-  checkMentorOrAdmin,
-  deletePracticeBatchAssignment,
-);
-app.put(
-  "/practice/batch-assign/:id/toggle-visible",
-  checkAuth,
-  checkMentorOrAdmin,
-  togglePracticeVisibility,
-);
+// app.put(
+//   "/practice/batch-assign/:id",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   editPracticeBatchAssignment,
+// );
+// app.delete(
+//   "/practice/batch-assign/:id",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   deletePracticeBatchAssignment,
+// );
+// app.put(
+//   "/practice/batch-assign/:id/toggle-visible",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   togglePracticeVisibility,
+// );
 app.put(
   "/practice/batch-assign/:id/toggle-featured",
   checkAuth,
   checkMentorOrAdmin,
   togglePracticeFeatured,
 );
-app.post(
-  "/practice/batch-assign",
-  checkAuth,
-  checkMentorOrAdmin,
-  assignPracticeToBatch,
-);
+// app.post(
+//   "/practice/batch-assign",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   assignPracticeToBatch,
+// );
 
 // Student side
 app.get("/practice/next", checkAuth, getNextPracticeQuestion);
