@@ -44,7 +44,7 @@ async function getNextPracticeQuestion(req, res) {
         pq.subject_id,         pq.topic_id,           pq.subtopic_id,
         sub.Sub_Name           AS subject_name,
         t.Topic_Name           AS topic_name,
-        st.Sub_Topic_Name      AS subtopic_name,
+        st.SubTopicName      AS subtopic_name,
         p.title                AS assignment_title,
         ? AS practice_assigned_id,
         (SELECT COUNT(*) FROM tbl_practice_questions WHERE practice_id = ?) AS total_in_set,
@@ -105,13 +105,11 @@ async function getNextPracticeQuestion(req, res) {
     });
   } catch (err) {
     console.error("Error getNextPracticeQuestion:", err.message);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        details: err.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      details: err.message,
+    });
   }
 }
 
