@@ -209,18 +209,18 @@ const {
 const {
   togglePracticeFeatured,
 } = require("./apis/practice/togglePracticeFeatured");
-// const {
-//   togglePracticeVisibility,
-// } = require("./apis/practice/togglePracticeVisibility");
-// const {
-//   editPracticeBatchAssignment,
-// } = require("./apis/practice/editPracticeBatchAssignment");
-// const {
-//   deletePracticeBatchAssignment,
-// } = require("./apis/practice/deletePracticeBatchAssignment");
-// const {
-//   assignPracticeToBatch,
-// } = require("./apis/practice/assignPracticeToBatch");
+const {
+  togglePracticeVisibility,
+} = require("./apis/practice/togglePracticeVisibility");
+const {
+  editPracticeBatchAssignment,
+} = require("./apis/practice/editPracticeBatchAssignment");
+const {
+  deletePracticeBatchAssignment,
+} = require("./apis/practice/deletePracticeBatchAssignment");
+const {
+  assignPracticeToBatch,
+} = require("./apis/practice/assignPracticeToBatch");
 
 require("dotenv").config();
 
@@ -486,36 +486,36 @@ app.delete(
   checkMentorOrAdmin,
   deletePracticeAssignment,
 );
-// app.put(
-//   "/practice/batch-assign/:id",
-//   checkAuth,
-//   checkMentorOrAdmin,
-//   editPracticeBatchAssignment,
-// );
-// app.delete(
-//   "/practice/batch-assign/:id",
-//   checkAuth,
-//   checkMentorOrAdmin,
-//   deletePracticeBatchAssignment,
-// );
-// app.put(
-//   "/practice/batch-assign/:id/toggle-visible",
-//   checkAuth,
-//   checkMentorOrAdmin,
-//   togglePracticeVisibility,
-// );
+app.put(
+  "/practice/batch-assign/:id",
+  checkAuth,
+  checkMentorOrAdmin,
+  editPracticeBatchAssignment,
+);
+app.delete(
+  "/practice/batch-assign/:id",
+  checkAuth,
+  checkMentorOrAdmin,
+  deletePracticeBatchAssignment,
+);
+app.put(
+  "/practice/batch-assign/:id/toggle-visible",
+  checkAuth,
+  checkMentorOrAdmin,
+  togglePracticeVisibility,
+);
 app.put(
   "/practice/batch-assign/:id/toggle-featured",
   checkAuth,
   checkMentorOrAdmin,
   togglePracticeFeatured,
 );
-// app.post(
-//   "/practice/batch-assign",
-//   checkAuth,
-//   checkMentorOrAdmin,
-//   assignPracticeToBatch,
-// );
+app.post(
+  "/practice/batch-assign",
+  checkAuth,
+  checkMentorOrAdmin,
+  assignPracticeToBatch,
+);
 
 // Student side
 app.get("/practice/next", checkAuth, getNextPracticeQuestion);
@@ -524,6 +524,112 @@ app.get("/practice/wrong", checkAuth, getWrongPracticeAnswers);
 app.get("/practice/stats", checkAuth, getPracticeStats);
 app.get("/practice/sets", checkAuth, getStudentPracticeSets);
 app.get("/practice/accuracy", checkAuth, getPracticeAccuracy);
+
+//! Missing routes — restored
+// Admin — materials
+app.post(
+  "/admin/materials",
+  checkAuth,
+  uploadImg.fields([
+    { name: "material_file", maxCount: 1 },
+    { name: "solution_file", maxCount: 1 },
+  ]),
+  addMaterial,
+);
+app.get("/admin/materials", checkAuth, getMaterials);
+app.put(
+  "/admin/materials/:id",
+  checkAuth,
+  uploadImg.fields([
+    { name: "material_file", maxCount: 1 },
+    { name: "solution_file", maxCount: 1 },
+  ]),
+  updateMaterial,
+);
+app.delete("/admin/materials/:id", checkAuth, deleteMaterial);
+app.put(
+  "/admin/materials/:id/toggleSolution",
+  checkAuth,
+  toggleSolutionVisibility,
+);
+
+// Materials — User
+app.get("/materials", checkAuth, getUserMaterials);
+
+// Admin Dashboard
+app.get("/admin/dashboardStats", checkAuth, getAdminDashboardStats);
+
+// Admin — Questions edit/delete
+app.put(
+  "/admin/questions/:id",
+  checkAuth,
+  uploadImg.fields([
+    { name: "question_image", maxCount: 1 },
+    { name: "answer_image", maxCount: 1 },
+  ]),
+  updateQuestion,
+);
+app.delete("/admin/questions/:id", checkAuth, deleteQuestion);
+
+// Admin — Tests edit/delete
+app.put(
+  "/admin/tests/:id",
+  checkAuth,
+  uploadImg.single("test_img_path"),
+  updateTest,
+);
+app.delete("/admin/tests/:id", checkAuth, deleteTest);
+app.delete(
+  "/admin/tests/:test_id/questions/:question_id",
+  checkAuth,
+  deleteTestQuestion,
+);
+
+// Admin — Batch edit/delete
+app.put("/admin/batch/:id", checkAuth, updateBatch);
+app.delete("/admin/batch/:id", checkAuth, deleteBatch);
+
+// Admin — Session edit/delete
+app.put("/admin/session/:id", checkAuth, updateSession);
+app.delete("/admin/session/:id", checkAuth, deleteSession);
+app.post(
+  "/admin/editSessionBatchAssignment",
+  checkAuth,
+  editSessionBatchAssignment,
+);
+
+// Admin — Test batch assignment delete
+app.delete(
+  "/admin/testBatchAssignment/:id",
+  checkAuth,
+  deleteTestBatchAssignment,
+);
+
+// Mentor — Add Question
+app.post(
+  "/mentor/addQuestion",
+  checkAuth,
+  uploadImg.fields([
+    { name: "question_image", maxCount: 1 },
+    { name: "option_a_image", maxCount: 1 },
+    { name: "option_b_image", maxCount: 1 },
+    { name: "option_c_image", maxCount: 1 },
+    { name: "option_d_image", maxCount: 1 },
+    { name: "answer_image", maxCount: 1 },
+  ]),
+  AddQuestions,
+);
+
+// Mentor — Update question
+app.put(
+  "/mentor/questions/:id",
+  checkAuth,
+  uploadImg.fields([
+    { name: "question_image", maxCount: 1 },
+    { name: "answer_image", maxCount: 1 },
+  ]),
+  updateMentorQuestion,
+);
 
 //?activate server
 app.listen(PORT, () => {
