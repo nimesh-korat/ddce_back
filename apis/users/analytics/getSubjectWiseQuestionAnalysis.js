@@ -44,6 +44,7 @@ async function GetSubjectWiseAnalysis(req, res) {
             WHERE ta.end_date < NOW() -- Only include expired tests
     AND ta.tbl_batch = ? 
     AND ta.tbl_phase = ?
+            AND (sa.is_count IS NULL OR sa.is_count = 0)
             GROUP BY sub.Id;
         `;
 
@@ -72,7 +73,8 @@ async function GetSubjectWiseAnalysis(req, res) {
             LEFT JOIN tbl_student_answer sa ON tq.question_id = sa.question_id AND sa.student_id = ?
             WHERE ta.end_date < NOW()
     AND ta.tbl_batch = ?
-    AND ta.tbl_phase = ?; -- Only include expired tests
+    AND ta.tbl_phase = ?
+    AND (sa.is_count IS NULL OR sa.is_count = 0); -- Only include expired tests
         `;
 
     //! old queries

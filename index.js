@@ -168,6 +168,17 @@ const {
 const {
   deleteMentorQuestion,
 } = require("./apis/mentor/questions/deleteMentorQuestion");
+// Practice — imports
+const { createPractice } = require("./apis/practice/createPractice");
+const { getPractices } = require("./apis/practice/getPractices");
+const { updatePractice } = require("./apis/practice/updatePractice");
+const { deletePractice } = require("./apis/practice/deletePractice");
+const {
+  addQuestionsToPractice,
+} = require("./apis/practice/addQuestionsToPractice");
+const {
+  removeQuestionFromPractice,
+} = require("./apis/practice/removeQuestionFromPractice");
 const {
   createPracticeAssignment,
 } = require("./apis/practice/createPracticeAssignment");
@@ -195,18 +206,21 @@ const { getPracticeStats } = require("./apis/practice/getPracticeStats");
 const {
   getStudentPracticeSets,
 } = require("./apis/practice/getStudentPracticeSets");
-// const {
-//   assignPracticeToBatch,
-// } = require("./apis/practice/assignPracticeToBatch");
-// const {
-//   editPracticeBatchAssignment,
-// } = require("./apis/practice/editPracticeBatchAssignment");
+const {
+  togglePracticeFeatured,
+} = require("./apis/practice/togglePracticeFeatured");
 // const {
 //   togglePracticeVisibility,
 // } = require("./apis/practice/togglePracticeVisibility");
 // const {
+//   editPracticeBatchAssignment,
+// } = require("./apis/practice/editPracticeBatchAssignment");
+// const {
 //   deletePracticeBatchAssignment,
 // } = require("./apis/practice/deletePracticeBatchAssignment");
+// const {
+//   assignPracticeToBatch,
+// } = require("./apis/practice/assignPracticeToBatch");
 
 require("dotenv").config();
 
@@ -421,32 +435,62 @@ app.get(
 );
 app.get("/practice/mentors", checkAuth, getMentorsList);
 
-// Student side
-app.get("/practice/next", checkAuth, getNextPracticeQuestion);
-app.post("/practice/answer", checkAuth, submitPracticeAnswer);
-app.get("/practice/wrong", checkAuth, getWrongPracticeAnswers);
-app.get("/practice/stats", checkAuth, getPracticeStats);
-app.get("/practice/sets", checkAuth, getStudentPracticeSets);
-app.get("/practice/accuracy", checkAuth, getPracticeAccuracy);
+//! PRACTICE MASTER — CRUD (admin + mentor)
+app.post(
+  "/practice",
+  checkAuth,
+  checkMentorOrAdmin,
+  uploadImg.single("image"),
+  createPractice,
+);
+app.get("/practice/list", checkAuth, checkMentorOrAdmin, getPractices);
+app.put(
+  "/practice/:id",
+  checkAuth,
+  checkMentorOrAdmin,
+  uploadImg.single("image"),
+  updatePractice,
+);
+app.delete("/practice/:id", checkAuth, checkMentorOrAdmin, deletePractice);
 
-// Practice — Batch Assignment (assign one practice to multiple batches)
-// app.post(
-//   "/practice/batch-assign",
-//   checkAuth,
-//   checkMentorOrAdmin,
-//   assignPracticeToBatch,
-// );
+// Practice Questions management
+app.post(
+  "/practice/:id/questions",
+  checkAuth,
+  checkMentorOrAdmin,
+  addQuestionsToPractice,
+);
+app.delete(
+  "/practice/:id/questions/:question_id",
+  checkAuth,
+  checkMentorOrAdmin,
+  removeQuestionFromPractice,
+);
+
+// Practice Batch Assignment
+app.post(
+  "/practice/assign",
+  checkAuth,
+  checkMentorOrAdmin,
+  createPracticeAssignment,
+);
+app.get(
+  "/practice/assignments",
+  checkAuth,
+  checkMentorOrAdmin,
+  getMyPracticeAssignments,
+);
+app.delete(
+  "/practice/assignments/:id",
+  checkAuth,
+  checkMentorOrAdmin,
+  deletePracticeAssignment,
+);
 // app.put(
 //   "/practice/batch-assign/:id",
 //   checkAuth,
 //   checkMentorOrAdmin,
 //   editPracticeBatchAssignment,
-// );
-// app.put(
-//   "/practice/batch-assign/:id/toggle",
-//   checkAuth,
-//   checkMentorOrAdmin,
-//   togglePracticeVisibility,
 // );
 // app.delete(
 //   "/practice/batch-assign/:id",
@@ -454,86 +498,32 @@ app.get("/practice/accuracy", checkAuth, getPracticeAccuracy);
 //   checkMentorOrAdmin,
 //   deletePracticeBatchAssignment,
 // );
-
-//! New Routes — Dashboard, Materials, Edit/Delete
-// Admin Dashboard
-app.get("/admin/dashboardStats", checkAuth, getAdminDashboardStats);
-
-// Materials — Admin
-app.post(
-  "/admin/materials",
-  checkAuth,
-  uploadImg.fields([
-    { name: "material_file", maxCount: 1 },
-    { name: "solution_file", maxCount: 1 },
-  ]),
-  addMaterial,
-);
-app.get("/admin/materials", checkAuth, getMaterials);
+// app.put(
+//   "/practice/batch-assign/:id/toggle-visible",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   togglePracticeVisibility,
+// );
 app.put(
-  "/admin/materials/:id",
+  "/practice/batch-assign/:id/toggle-featured",
   checkAuth,
-  uploadImg.fields([
-    { name: "material_file", maxCount: 1 },
-    { name: "solution_file", maxCount: 1 },
-  ]),
-  updateMaterial,
+  checkMentorOrAdmin,
+  togglePracticeFeatured,
 );
-app.delete("/admin/materials/:id", checkAuth, deleteMaterial);
-app.put(
-  "/admin/materials/:id/toggleSolution",
-  checkAuth,
-  toggleSolutionVisibility,
-);
+// app.post(
+//   "/practice/batch-assign",
+//   checkAuth,
+//   checkMentorOrAdmin,
+//   assignPracticeToBatch,
+// );
 
-// Materials — User
-app.get("/materials", checkAuth, getUserMaterials);
-
-// Questions — Edit / Delete
-app.put(
-  "/admin/questions/:id",
-  checkAuth,
-  uploadImg.fields([
-    { name: "question_image", maxCount: 1 },
-    { name: "answer_image", maxCount: 1 },
-  ]),
-  updateQuestion,
-);
-app.delete("/admin/questions/:id", checkAuth, deleteQuestion);
-
-// Tests — Edit / Delete
-app.put(
-  "/admin/tests/:id",
-  checkAuth,
-  uploadImg.single("test_img_path"),
-  updateTest,
-);
-app.delete("/admin/tests/:id", checkAuth, deleteTest);
-
-// Test Questions — Remove question from test
-app.delete(
-  "/admin/tests/:test_id/questions/:question_id",
-  checkAuth,
-  deleteTestQuestion,
-);
-
-// Batch — Edit / Delete
-app.put("/admin/batch/:id", checkAuth, updateBatch);
-app.delete("/admin/batch/:id", checkAuth, deleteBatch);
-
-// Session — Edit / Delete
-app.put("/admin/session/:id", checkAuth, updateSession);
-app.delete("/admin/session/:id", checkAuth, deleteSession);
-app.post(
-  "/admin/editSessionBatchAssignment",
-  checkAuth,
-  editSessionBatchAssignment,
-);
-app.delete(
-  "/admin/testBatchAssignment/:id",
-  checkAuth,
-  deleteTestBatchAssignment,
-);
+// Student side
+app.get("/practice/next", checkAuth, getNextPracticeQuestion);
+app.post("/practice/answer", checkAuth, submitPracticeAnswer);
+app.get("/practice/wrong", checkAuth, getWrongPracticeAnswers);
+app.get("/practice/stats", checkAuth, getPracticeStats);
+app.get("/practice/sets", checkAuth, getStudentPracticeSets);
+app.get("/practice/accuracy", checkAuth, getPracticeAccuracy);
 
 //?activate server
 app.listen(PORT, () => {
