@@ -2,9 +2,10 @@ const pool = require("../../db/dbConnect");
 
 async function getPracticeStats(req, res) {
   const student_id = req?.user?.id;
-  const batch_id   = req?.user?.Batch;
-  const phase_id   = req?.user?.Phase;
-  if (!student_id) return res.status(401).json({ success: false, message: "Unauthorized" });
+  const batch_id = req?.user?.Batch;
+  const phase_id = req?.user?.Phase;
+  if (!student_id)
+    return res.status(401).json({ success: false, message: "Unauthorized" });
 
   try {
     const sql = `
@@ -27,7 +28,7 @@ async function getPracticeStats(req, res) {
         AND ans.is_count             = 0
       WHERE pa.tbl_batch  = ?
         AND (pa.tbl_phase IS NULL OR pa.tbl_phase = ?)
-        AND pa.is_visible  = 1
+        AND pa.is_featured  = 1
         AND pa.is_featured = 1
         AND p.is_active    = 1
         AND (pa.start_date IS NULL OR pa.start_date <= NOW())
@@ -36,23 +37,31 @@ async function getPracticeStats(req, res) {
       ORDER BY sub.Id ASC
     `;
 
-    const [subjects] = await pool.promise().query(sql, [student_id, batch_id, phase_id]);
+    const [subjects] = await pool
+      .promise()
+      .query(sql, [student_id, batch_id, phase_id]);
 
     const totals = subjects.reduce(
       (acc, s) => ({
-        total:     acc.total     + s.total_questions,
+        total: acc.total + s.total_questions,
         attempted: acc.attempted + s.attempted,
-        correct:   acc.correct   + s.correct,
-        wrong:     acc.wrong     + s.wrong,
+        correct: acc.correct + s.correct,
+        wrong: acc.wrong + s.wrong,
         remaining: acc.remaining + s.remaining,
       }),
-      { total: 0, attempted: 0, correct: 0, wrong: 0, remaining: 0 }
+      { total: 0, attempted: 0, correct: 0, wrong: 0, remaining: 0 },
     );
 
     return res.status(200).json({ success: true, data: { subjects, totals } });
   } catch (err) {
     console.error("Error getPracticeStats:", err.message);
-    return res.status(500).json({ success: false, message: "Something went wrong", details: err.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong",
+        details: err.message,
+      });
   }
 }
 

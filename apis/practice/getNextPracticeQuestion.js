@@ -2,26 +2,32 @@ const pool = require("../../db/dbConnect");
 const { generateSignedUrl } = require("../../utils/generateSignedUrl");
 
 async function getNextPracticeQuestion(req, res) {
-  const cloudfrontDomain     = process.env.AWS_CLOUDFRONT_DOMAIN;
-  const student_id           = req?.user?.id;
-  const batch_id             = req?.user?.Batch;
-  const phase_id             = req?.user?.Phase;
+  const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
+  const student_id = req?.user?.id;
+  const batch_id = req?.user?.Batch;
+  const phase_id = req?.user?.Phase;
   const practice_assigned_id = req.query.practice_assigned_id || null;
 
-  if (!student_id) return res.status(401).json({ success: false, message: "Unauthorized" });
-  if (!practice_assigned_id) return res.status(400).json({ success: false, message: "practice_assigned_id is required" });
+  if (!student_id)
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  if (!practice_assigned_id)
+    return res
+      .status(400)
+      .json({ success: false, message: "practice_assigned_id is required" });
 
   try {
     // Get the practice_id for this batch assignment
     const [assignmentRow] = await pool.promise().query(
       `SELECT pa.practice_id FROM tbl_practice_assigned pa
-       WHERE pa.id = ? AND pa.is_visible = 1 AND pa.is_featured = 1
+       WHERE pa.id = ? AND pa.is_featured = 1 AND pa.is_featured = 1
          AND (pa.start_date IS NULL OR pa.start_date <= NOW())
          AND (pa.end_date   IS NULL OR pa.end_date   >= NOW())`,
-      [practice_assigned_id]
+      [practice_assigned_id],
     );
     if (assignmentRow.length === 0)
-      return res.status(200).json({ success: true, data: null, message: "all_completed" });
+      return res
+        .status(200)
+        .json({ success: true, data: null, message: "all_completed" });
 
     const practice_id = assignmentRow[0].practice_id;
 
@@ -64,23 +70,26 @@ async function getNextPracticeQuestion(req, res) {
     `;
 
     const params = [
-      practice_assigned_id,   // alias in SELECT
-      practice_id,            // total_in_set subquery
-      practice_assigned_id,   // attempted_in_set subquery
-      student_id,             // attempted_in_set subquery
-      practice_id,            // main WHERE pq.practice_id
-      practice_assigned_id,   // NOT EXISTS subquery
-      student_id,             // NOT EXISTS subquery
+      practice_assigned_id, // alias in SELECT
+      practice_id, // total_in_set subquery
+      practice_assigned_id, // attempted_in_set subquery
+      student_id, // attempted_in_set subquery
+      practice_id, // main WHERE pq.practice_id
+      practice_assigned_id, // NOT EXISTS subquery
+      student_id, // NOT EXISTS subquery
     ];
 
     const [results] = await pool.promise().query(sql, params);
 
     if (results.length === 0)
-      return res.status(200).json({ success: true, data: null, message: "all_completed" });
+      return res
+        .status(200)
+        .json({ success: true, data: null, message: "all_completed" });
 
-    const q      = results[0];
+    const q = results[0];
     const expiry = new Date(Date.now() + 1000 * 60 * 60 * 4);
-    const sign   = (p) => p ? generateSignedUrl(`${cloudfrontDomain}/${p}`, expiry) : null;
+    const sign = (p) =>
+      p ? generateSignedUrl(`${cloudfrontDomain}/${p}`, expiry) : null;
 
     return res.status(200).json({
       success: true,
@@ -91,12 +100,18 @@ async function getNextPracticeQuestion(req, res) {
         option_b_image: sign(q.option_b_image),
         option_c_image: sign(q.option_c_image),
         option_d_image: sign(q.option_d_image),
-        answer_image:   sign(q.answer_image),
+        answer_image: sign(q.answer_image),
       },
     });
   } catch (err) {
     console.error("Error getNextPracticeQuestion:", err.message);
-    return res.status(500).json({ success: false, message: "Something went wrong", details: err.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong",
+        details: err.message,
+      });
   }
 }
 
