@@ -222,6 +222,14 @@ const {
 //   assignPracticeToBatch,
 // } = require("./apis/practice/assignPracticeToBatch");
 
+const { getBatchAccess } = require("./apis/admin/batchAccess/getBatchAccess");
+const {
+  updateBatchAccess,
+} = require("./apis/admin/batchAccess/updateBatchAccess");
+const {
+  getMyBatchAccess,
+} = require("./apis/users/batchAccess/getMyBatchAccess");
+
 require("dotenv").config();
 
 const app = express();
@@ -631,7 +639,13 @@ app.put(
   updateMentorQuestion,
 );
 
+//! BATCH ACCESS CONTROL
+app.get("/admin/batchAccess/:batch_id", checkAuth, getBatchAccess);
+app.put("/admin/batchAccess/:batch_id", checkAuth, updateBatchAccess);
+app.get("/batchAccess", checkAuth, getMyBatchAccess);
+
 //?activate server
+
 app.listen(PORT, () => {
   console.log("Server Started on port: ", PORT);
 });
