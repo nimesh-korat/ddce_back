@@ -230,6 +230,9 @@ const {
   getMyBatchAccess,
 } = require("./apis/users/batchAccess/getMyBatchAccess");
 
+const {
+  getStudentAnswers,
+} = require("./apis/admin/studentAnswers/getStudentAnswers");
 require("dotenv").config();
 
 const app = express();
@@ -643,6 +646,8 @@ app.put(
 app.get("/admin/batchAccess/:batch_id", checkAuth, getBatchAccess);
 app.put("/admin/batchAccess/:batch_id", checkAuth, updateBatchAccess);
 app.get("/batchAccess", checkAuth, getMyBatchAccess);
+
+app.get("/admin/studentAnswers", checkAuth, getStudentAnswers);
 
 //?activate server
 
