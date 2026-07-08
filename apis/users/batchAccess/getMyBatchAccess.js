@@ -3,6 +3,7 @@ const { ALL_FEATURES } = require("../../admin/batchAccess/getBatchAccess");
 
 async function getMyBatchAccess(req, res) {
   const batch_id = req?.user?.Batch;
+  const phase_id = req?.user?.Phase || 1; // default phase 1
 
   if (!batch_id)
     return res.status(200).json({
@@ -11,23 +12,33 @@ async function getMyBatchAccess(req, res) {
     });
 
   try {
-    const [rows] = await pool.promise().query(
-      "SELECT feature_key, visibility FROM tbl_batch_access WHERE tbl_batch = ?",
-      [batch_id]
-    );
+    const [rows] = await pool
+      .promise()
+      .query(
+        "SELECT feature_key, visibility FROM tbl_batch_access WHERE tbl_batch = ? AND tbl_phase = ?",
+        [batch_id, phase_id],
+      );
 
     const savedMap = {};
-    rows.forEach((r) => { savedMap[r.feature_key] = r.visibility; });
+    rows.forEach((r) => {
+      savedMap[r.feature_key] = r.visibility;
+    });
 
     const features = ALL_FEATURES.map((f) => ({
-      key:        f.key,
+      key: f.key,
       visibility: savedMap[f.key] !== undefined ? savedMap[f.key] : 0,
     }));
 
     return res.status(200).json({ success: true, data: features });
   } catch (err) {
     console.error("Error getMyBatchAccess:", err.message);
-    return res.status(500).json({ success: false, message: "Something went wrong", details: err.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong",
+        details: err.message,
+      });
   }
 }
 
