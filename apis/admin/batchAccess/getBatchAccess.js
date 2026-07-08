@@ -12,6 +12,7 @@ const ALL_FEATURES = [
   { key: "solutions", label: "Materials & Solutions" },
   { key: "practice", label: "Practice" },
   { key: "doubts", label: "Doubts" },
+  { key: "flip_card", label: "Live Stats Flip Card" },
 ];
 
 async function getBatchAccess(req, res) {
