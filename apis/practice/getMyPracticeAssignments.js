@@ -44,7 +44,7 @@ async function getMyPracticeAssignments(req, res) {
            pa.id AS batch_assignment_id,
            pa.tbl_batch, pa.tbl_phase,
            pa.start_date, pa.end_date,
-           pa.is_featured, pa.is_featured, pa.assigned_on,
+           pa.is_featured, pa.assigned_on,
            b.batch_title,
            ph.title AS phase_title,
            CASE
@@ -66,13 +66,11 @@ async function getMyPracticeAssignments(req, res) {
     return res.status(200).json({ success: true, data: practices });
   } catch (err) {
     console.error("Error getMyPracticeAssignments:", err.message);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        details: err.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      details: err.message,
+    });
   }
 }
 

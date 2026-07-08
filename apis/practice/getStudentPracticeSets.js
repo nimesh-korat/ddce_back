@@ -24,7 +24,6 @@ async function getStudentPracticeSets(req, res) {
          pa.start_date,
          pa.end_date,
          pa.is_featured,
-         pa.is_featured,
          COUNT(DISTINCT pq.question_id) AS total_questions,
          CASE
            WHEN pa.start_date IS NOT NULL AND pa.start_date > NOW() THEN 'upcoming'
@@ -107,13 +106,11 @@ async function getStudentPracticeSets(req, res) {
     return res.status(200).json({ success: true, data: result });
   } catch (err) {
     console.error("Error getStudentPracticeSets:", err.message);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        details: err.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      details: err.message,
+    });
   }
 }
 
