@@ -233,6 +233,11 @@ const {
 const {
   getStudentAnswers,
 } = require("./apis/admin/studentAnswers/getStudentAnswers");
+
+const {
+  getStudentProfile,
+} = require("./apis/admin/fetchStudentsData/getStudentProfile");
+
 require("dotenv").config();
 
 const app = express();
@@ -386,6 +391,7 @@ app.get(
 );
 app.get("/admin/getStudentWiseExamData", checkAuth, getStudentsWiseExamData);
 app.get("/admin/getTestNames", checkAuth, getTestNames);
+app.get("/admin/studentProfile/:student_id", checkAuth, getStudentProfile);
 
 //! MENTOR APIs
 app.post("/mentor/login", LoginMentor);
