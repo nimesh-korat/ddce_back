@@ -123,6 +123,9 @@ const {
   getStudentsWiseExamData,
 } = require("./apis/admin/fetchStudentsData/getStudentWiseExamData");
 const {
+  getStudentSubjectAccuracy,
+} = require("./apis/admin/fetchStudentsData/getStudentSubjectAccuracy");
+const {
   DdcetRankPredict,
 } = require("./apis/users/ddcetCollegePrediction/ddcet_rank_predict");
 const { getColleges } = require("./apis/users/collegeAndBranch/getColleges");
@@ -222,6 +225,8 @@ const {
 //   assignPracticeToBatch,
 // } = require("./apis/practice/assignPracticeToBatch");
 
+const { sendDoubtOtp } = require("./apis/users/doubt/sendDoubtOtp");
+const { verifyDoubtOtp } = require("./apis/users/doubt/verifyDoubtOtp");
 const { getBatchAccess } = require("./apis/admin/batchAccess/getBatchAccess");
 const {
   updateBatchAccess,
@@ -390,6 +395,7 @@ app.get(
   getUsersWithExamData,
 );
 app.get("/admin/getStudentWiseExamData", checkAuth, getStudentsWiseExamData);
+app.get("/admin/studentSubjectAccuracy", checkAuth, getStudentSubjectAccuracy);
 app.get("/admin/getTestNames", checkAuth, getTestNames);
 app.get("/admin/studentProfile/:student_id", checkAuth, getStudentProfile);
 
@@ -652,6 +658,8 @@ app.put(
 app.get("/admin/batchAccess/:batch_id", checkAuth, getBatchAccess);
 app.put("/admin/batchAccess/:batch_id", checkAuth, updateBatchAccess);
 app.get("/batchAccess", checkAuth, getMyBatchAccess);
+app.post("/doubt/sendOtp", checkAuth, sendDoubtOtp);
+app.post("/doubt/verifyOtp", checkAuth, verifyDoubtOtp);
 
 app.get("/admin/studentAnswers", checkAuth, getStudentAnswers);
 
