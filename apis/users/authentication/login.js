@@ -47,11 +47,11 @@ async function LoginUser(req, res) {
     }
 
     // Revoke all active sessions
-    // await pool.promise().query(
-    //   `UPDATE sessions SET status = 'revoked' 
-    //    WHERE user_id = ? AND status = 'active'`,
-    //   [user.Id]
-    // );
+    await pool.promise().query(
+      `UPDATE sessions SET status = 'revoked' 
+       WHERE user_id = ? AND status = 'active'`,
+      [user.Id]
+    );
 
     // Generate token with embedded tokenId
     const { token, tokenId } = generateToken(user);

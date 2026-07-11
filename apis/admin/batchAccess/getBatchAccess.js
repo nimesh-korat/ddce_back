@@ -13,6 +13,7 @@ const ALL_FEATURES = [
   { key: "practice", label: "Practice" },
   { key: "doubts", label: "Doubts" },
   { key: "flip_card", label: "Live Stats Flip Card" },
+  { key: "view_answers", label: "View All Answers (Flip Card)" },
 ];
 
 async function getBatchAccess(req, res) {
@@ -46,13 +47,11 @@ async function getBatchAccess(req, res) {
     return res.status(200).json({ success: true, data: features });
   } catch (err) {
     console.error("Error getBatchAccess:", err.message);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        details: err.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      details: err.message,
+    });
   }
 }
 

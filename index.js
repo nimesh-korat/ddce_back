@@ -225,6 +225,7 @@ const {
 //   assignPracticeToBatch,
 // } = require("./apis/practice/assignPracticeToBatch");
 
+const { getMyAnswers } = require("./apis/users/answers/getMyAnswers");
 const { sendDoubtOtp } = require("./apis/users/doubt/sendDoubtOtp");
 const { verifyDoubtOtp } = require("./apis/users/doubt/verifyDoubtOtp");
 const { getBatchAccess } = require("./apis/admin/batchAccess/getBatchAccess");
@@ -658,6 +659,7 @@ app.put(
 app.get("/admin/batchAccess/:batch_id", checkAuth, getBatchAccess);
 app.put("/admin/batchAccess/:batch_id", checkAuth, updateBatchAccess);
 app.get("/batchAccess", checkAuth, getMyBatchAccess);
+app.get("/myAnswers", checkAuth, getMyAnswers);
 app.post("/doubt/sendOtp", checkAuth, sendDoubtOtp);
 app.post("/doubt/verifyOtp", checkAuth, verifyDoubtOtp);
 
