@@ -244,6 +244,13 @@ const {
   getStudentProfile,
 } = require("./apis/admin/fetchStudentsData/getStudentProfile");
 
+const { createDoodle } = require("./apis/admin/doodle/createDoodle");
+const { getDoodles } = require("./apis/admin/doodle/getDoodles");
+const { updateDoodle } = require("./apis/admin/doodle/updateDoodle");
+const { deleteDoodle } = require("./apis/admin/doodle/deleteDoodle");
+const { assignDoodle } = require("./apis/admin/doodle/assignDoodle");
+const { removeAssignment } = require("./apis/admin/doodle/removeAssignment");
+const { getActiveDoodle } = require("./apis/users/doodle/getActiveDoodle");
 require("dotenv").config();
 
 const app = express();
@@ -664,6 +671,20 @@ app.post("/doubt/sendOtp", checkAuth, sendDoubtOtp);
 app.post("/doubt/verifyOtp", checkAuth, verifyDoubtOtp);
 
 app.get("/admin/studentAnswers", checkAuth, getStudentAnswers);
+
+//! DOODLE / OCCASION
+app.post("/admin/doodle", checkAuth, uploadImg.single("image"), createDoodle);
+app.get("/admin/doodle", checkAuth, getDoodles);
+app.put(
+  "/admin/doodle/:id",
+  checkAuth,
+  uploadImg.single("image"),
+  updateDoodle,
+);
+app.delete("/admin/doodle/:id", checkAuth, deleteDoodle);
+app.post("/admin/doodle/assign", checkAuth, assignDoodle);
+app.delete("/admin/doodle/assign/:id", checkAuth, removeAssignment);
+app.get("/activeDoodle", getActiveDoodle); // public — also works for guests
 
 //?activate server
 
