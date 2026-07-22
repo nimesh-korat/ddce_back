@@ -251,6 +251,13 @@ const { deleteDoodle } = require("./apis/admin/doodle/deleteDoodle");
 const { assignDoodle } = require("./apis/admin/doodle/assignDoodle");
 const { removeAssignment } = require("./apis/admin/doodle/removeAssignment");
 const { getActiveDoodle } = require("./apis/users/doodle/getActiveDoodle");
+const { createNotify } = require("./apis/admin/studNotify/createNotify");
+const { getNotifies } = require("./apis/admin/studNotify/getNotifies");
+const { updateNotify } = require("./apis/admin/studNotify/updateNotify");
+const { deleteNotify } = require("./apis/admin/studNotify/deleteNotify");
+const {
+  getActiveNotifies,
+} = require("./apis/users/studNotify/getActiveNotifies");
 require("dotenv").config();
 
 const app = express();
@@ -685,6 +692,13 @@ app.delete("/admin/doodle/:id", checkAuth, deleteDoodle);
 app.post("/admin/doodle/assign", checkAuth, assignDoodle);
 app.delete("/admin/doodle/assign/:id", checkAuth, removeAssignment);
 app.get("/activeDoodle", getActiveDoodle); // public — also works for guests
+
+//! STUDENT NOTIFICATIONS
+app.post("/admin/studNotify", checkAuth, createNotify);
+app.get("/admin/studNotify", checkAuth, getNotifies);
+app.put("/admin/studNotify/:id", checkAuth, updateNotify);
+app.delete("/admin/studNotify/:id", checkAuth, deleteNotify);
+app.get("/studNotify", checkAuth, getActiveNotifies);
 
 //?activate server
 

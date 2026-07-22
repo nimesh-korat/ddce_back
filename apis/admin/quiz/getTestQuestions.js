@@ -29,6 +29,7 @@ async function getTestQuestions(req, res) {
                 q.option_d_image,
                 q.question_marks,
                 q.question_difficulty,
+                q.prevAskedYear,
                 q.tbl_paragraph, -- Foreign key for paragraph
                 tq.test_id,
                 p.paragraph_text,
@@ -55,7 +56,7 @@ async function getTestQuestions(req, res) {
         return imagePath
           ? generateSignedUrl(
               `${cloudfrontDomain}/${imagePath}`,
-              new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 day expiry
+              new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day expiry
             )
           : null;
       };
