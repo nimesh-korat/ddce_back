@@ -6,8 +6,7 @@ async function getActiveNotifies(req, res) {
 
   try {
     const [rows] = await pool.promise().query(
-      `SELECT id, name, college_name, mode,
-         CONVERT_TZ(join_datetime, @@session.time_zone, "+05:30") AS join_datetime
+      `SELECT id, name, college_name, mode, join_datetime
        FROM stud_notify_admin
        WHERE NOW() BETWEEN feature_datetime_start AND feature_datetime_end
          AND join_datetime <= NOW()
