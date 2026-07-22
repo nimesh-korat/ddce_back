@@ -5,6 +5,7 @@ async function updateNotify(req, res) {
   const {
     name,
     college_name,
+    mode,
     join_datetime,
     feature_datetime_start,
     feature_datetime_end,
@@ -15,10 +16,11 @@ async function updateNotify(req, res) {
     await pool
       .promise()
       .query(
-        `UPDATE stud_notify_admin SET name=?, college_name=?, join_datetime=?, feature_datetime_start=?, feature_datetime_end=?, tbl_batch=?, tbl_phase=? WHERE id=?`,
+        `UPDATE stud_notify_admin SET name=?, college_name=?, mode=?, join_datetime=?, feature_datetime_start=?, feature_datetime_end=?, tbl_batch=?, tbl_phase=? WHERE id=?`,
         [
           name,
           college_name,
+          mode || "Offline",
           join_datetime,
           feature_datetime_start,
           feature_datetime_end,

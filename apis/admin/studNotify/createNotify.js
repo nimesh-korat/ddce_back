@@ -5,6 +5,7 @@ async function createNotify(req, res) {
   const {
     name,
     college_name,
+    mode,
     join_datetime,
     feature_datetime_start,
     feature_datetime_end,
@@ -23,11 +24,12 @@ async function createNotify(req, res) {
       .json({ success: false, message: "All fields required" });
   try {
     const [r] = await pool.promise().query(
-      `INSERT INTO stud_notify_admin (name, college_name, join_datetime, feature_datetime_start, feature_datetime_end, tbl_batch, tbl_phase, added_by)
-       VALUES (?,?,?,?,?,?,?,?)`,
+      `INSERT INTO stud_notify_admin (name, college_name, mode, join_datetime, feature_datetime_start, feature_datetime_end, tbl_batch, tbl_phase, added_by)
+       VALUES (?,?,?,?,?,?,?,?,?)`,
       [
         name,
         college_name,
+        mode || "Offline",
         join_datetime,
         feature_datetime_start,
         feature_datetime_end,
