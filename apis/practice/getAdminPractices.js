@@ -1,17 +1,18 @@
 const pool = require("../../db/dbConnect");
 const { generateSignedUrl } = require("../../utils/generateSignedUrl");
 
-async function getPractices(req, res) {
+async function getAdminPractices(req, res) {
   const user_id = req?.user?.id;
-  const role    = req?.user?.role;
-  if (!user_id) return res.status(401).json({ success: false, message: "Unauthorized" });
+  const role = req?.user?.role;
+  if (!user_id)
+    return res.status(401).json({ success: false, message: "Unauthorized" });
 
   const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
 
   try {
-    // Admin sees all; mentor sees own
-    const whereClause = role === 1 ? "p.is_active = 1" : "p.is_active = 1 AND p.added_by = ?";
-    const params      = role === 1 ? [] : [user_id];
+    const whereClause =
+      role === 1 ? "p.is_active = 1" : "p.is_active = 1 AND p.added_by = ?";
+    const params = role === 1 ? [] : [user_id];
 
     const [practices] = await pool.promise().query(
       `SELECT
@@ -25,12 +26,11 @@ async function getPractices(req, res) {
        WHERE ${whereClause}
        GROUP BY p.id
        ORDER BY p.added_on DESC`,
-      params
+      params,
     );
 
     const expiry = new Date(Date.now() + 1000 * 60 * 60 * 24);
 
-    // For each practice, fetch batch assignments
     for (const prac of practices) {
       prac.image_url = prac.image_url
         ? generateSignedUrl(`${cloudfrontDomain}/${prac.image_url}`, expiry)
@@ -55,16 +55,16 @@ async function getPractices(req, res) {
          LEFT JOIN tbl_phase ph ON ph.Id = pa.tbl_phase
          WHERE pa.practice_id = ?
          ORDER BY pa.assigned_on DESC`,
-        [prac.id]
+        [prac.id],
       );
       prac.batch_assignments = batches;
     }
 
     return res.status(200).json({ success: true, data: practices });
   } catch (err) {
-    console.error("Error getPractices:", err.message);
+    console.error("Error getAdminPractices:", err.message);
     return res.status(500).json({ success: false, message: err.message });
   }
 }
 
-module.exports = { getPractices };
+module.exports = { getAdminPractices };

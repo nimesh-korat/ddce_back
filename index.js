@@ -174,6 +174,7 @@ const {
 // Practice — imports
 const { createPractice } = require("./apis/practice/createPractice");
 const { getPractices } = require("./apis/practice/getPractices");
+const { getAdminPractices } = require("./apis/practice/getAdminPractices");
 const { updatePractice } = require("./apis/practice/updatePractice");
 const { deletePractice } = require("./apis/practice/deletePractice");
 const {
@@ -482,6 +483,12 @@ app.post(
   createPractice,
 );
 app.get("/practice/list", checkAuth, checkMentorOrAdmin, getPractices);
+app.get(
+  "/practice/admin-list",
+  checkAuth,
+  checkMentorOrAdmin,
+  getAdminPractices,
+);
 app.put(
   "/practice/:id",
   checkAuth,
