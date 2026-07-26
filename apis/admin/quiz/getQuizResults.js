@@ -13,80 +13,79 @@ async function getQuizResults(req, res) {
   try {
     const db = pool.promise();
 
-    // ── 1. Get all tests that have been assigned (with batch+phase) ──
+    // ── 1. Tests that have results (for dropdown) ───────────
     const [tests] = await db.query(
       `SELECT DISTINCT t.id, t.test_name,
          ta.tbl_batch, ta.tbl_phase,
          b.batch_title, p.title AS phase_title
        FROM tbl_test t
-       JOIN tbl_test_assigned ta ON ta.tbl_test = t.id
+       JOIN tbl_final_result fr ON fr.test_id = t.id
+       LEFT JOIN tbl_test_assigned ta ON ta.tbl_test = t.id
        LEFT JOIN tbl_batch b ON b.id = ta.tbl_batch
        LEFT JOIN tbl_phase p ON p.Id = ta.tbl_phase
        ORDER BY t.test_name ASC`,
     );
 
     if (!test_id)
-      return res
-        .status(200)
-        .json({
-          success: true,
-          tests,
-          data: [],
-          pagination: { total: 0, page, limit, totalPages: 0 },
-        });
+      return res.status(200).json({
+        success: true,
+        tests,
+        data: [],
+        pagination: { total: 0, page, limit, totalPages: 0 },
+      });
 
-    // ── 2. Build filter conditions ────────────────────────────────
+    // ── 2. Build WHERE conditions ─────────────────────────────
+    // Filter by student's batch/phase (from users table)
     const conditions = ["fr.test_id = ?"];
     const params = [test_id];
 
     if (batch_id) {
-      conditions.push("ta.tbl_batch = ?");
+      conditions.push("u.tbl_batch = ?");
       params.push(batch_id);
     }
     if (phase_id) {
-      conditions.push("ta.tbl_phase = ?");
+      conditions.push("u.tbl_phase = ?");
       params.push(phase_id);
     }
 
     const where = conditions.join(" AND ");
 
-    // ── 3. Total count ────────────────────────────────────────────
+    // ── 3. Total count ────────────────────────────────────────
     const [[{ total }]] = await db.query(
       `SELECT COUNT(*) AS total
        FROM tbl_final_result fr
-       JOIN tbl_test_assigned ta ON ta.tbl_test = fr.test_id
-         AND (ta.tbl_batch = (SELECT tbl_batch FROM users WHERE Id = fr.std_id LIMIT 1))
+       JOIN users u ON u.Id = fr.std_id
        WHERE ${where}`,
-      params,
+      [...params],
     );
 
-    // ── 4. Results with student + batch info ──────────────────────
+    // ── 4. Paginated results ──────────────────────────────────
     const [rows] = await db.query(
       `SELECT
          fr.id, fr.std_id, fr.test_id,
          fr.total_correct, fr.total_incorrect, fr.total_skipped,
-         fr.obtained_marks, fr.total_marks, fr.result_gen_datetime,
-         u.Name AS student_name, u.College_Name AS college,
+         fr.obtained_marks, fr.total_marks,
+         fr.result_gen_datetime,
+         u.Name       AS student_name,
+         u.College_Name AS college,
          u.tbl_batch, u.tbl_phase,
-         b.batch_title, p.title AS phase_title,
-         ROUND(fr.total_correct * 100.0 / NULLIF(fr.total_correct + fr.total_incorrect + fr.total_skipped, 0), 2) AS accuracy_pct,
-         ROUND(fr.obtained_marks * 100.0 / NULLIF(fr.total_marks, 0), 2) AS score_pct
+         b.batch_title,
+         ph.title     AS phase_title,
+         ROUND(
+           fr.total_correct * 100.0 /
+           NULLIF(fr.total_correct + fr.total_incorrect + fr.total_skipped, 0),
+         2) AS accuracy_pct,
+         ROUND(
+           fr.obtained_marks * 100.0 / NULLIF(fr.total_marks, 0),
+         2) AS score_pct
        FROM tbl_final_result fr
-       JOIN users u ON u.Id = fr.std_id
-       LEFT JOIN tbl_batch b ON b.id = u.tbl_batch
-       LEFT JOIN tbl_phase p ON p.Id = u.tbl_phase
-       WHERE fr.test_id = ?
-         ${batch_id ? "AND u.tbl_batch = ?" : ""}
-         ${phase_id ? "AND u.tbl_phase = ?" : ""}
+       JOIN users u         ON u.Id    = fr.std_id
+       LEFT JOIN tbl_batch  b  ON b.id   = u.tbl_batch
+       LEFT JOIN tbl_phase  ph ON ph.Id  = u.tbl_phase
+       WHERE ${where}
        ORDER BY fr.obtained_marks DESC, fr.total_correct DESC
        LIMIT ? OFFSET ?`,
-      [
-        test_id,
-        ...(batch_id ? [batch_id] : []),
-        ...(phase_id ? [phase_id] : []),
-        limit,
-        offset,
-      ],
+      [...params, limit, offset],
     );
 
     return res.status(200).json({
