@@ -13,7 +13,7 @@ async function getQuestionStudentAnswers(req, res) {
   try {
     const db = pool.promise();
 
-    // Get question details + options
+    // Question details + options
     const [[question]] = await db.query(
       `SELECT q.id, q.question_text, q.answer_text,
          q.option_a_text, q.option_b_text, q.option_c_text, q.option_d_text
@@ -25,33 +25,45 @@ async function getQuestionStudentAnswers(req, res) {
         .status(404)
         .json({ success: false, message: "Question not found" });
 
-    // Build filter
-    const conditions = ["sa.question_id = ?", "sa.is_count = 0"];
-    const params = [question_id];
+    // User filters
+    const userCond = [];
+    const userP = [];
     if (batch_id) {
-      conditions.push("u.tbl_batch = ?");
-      params.push(batch_id);
+      userCond.push("u.tbl_batch = ?");
+      userP.push(batch_id);
     }
     if (phase_id) {
-      conditions.push("u.tbl_phase = ?");
-      params.push(phase_id);
+      userCond.push("u.tbl_phase = ?");
+      userP.push(phase_id);
     }
-    const where = conditions.join(" AND ");
+    const userWhere = userCond.length ? "AND " + userCond.join(" AND ") : "";
 
+    // UNION: quiz + practice answers for this question
     const [rows] = await db.query(
       `SELECT
-         sa.id, sa.student_id, sa.std_answer, sa.correct_answer,
-         sa.is_correct, sa.obt_marks, sa.datetime,
-         u.Name        AS student_name,
+         a.student_id, a.std_answer, a.correct_answer,
+         a.is_correct, a.obt_marks, a.answered_on, a.source,
+         u.Name         AS student_name,
          u.College_Name AS college,
-         b.batch_title, p.title AS phase_title
-       FROM tbl_student_answer sa
-       JOIN users u         ON u.Id   = sa.student_id
+         b.batch_title,
+         p.title        AS phase_title
+       FROM (
+         SELECT student_id, std_answer, correct_answer, is_correct,
+                obt_marks, datetime AS answered_on, 'quiz' AS source
+         FROM tbl_student_answer
+         WHERE question_id = ? AND is_count = 0
+         UNION ALL
+         SELECT student_id, std_answer, correct_answer, is_correct,
+                NULL AS obt_marks, attempted_on AS answered_on, 'practice' AS source
+         FROM tbl_practice_answer
+         WHERE question_id = ? AND is_count = 0
+       ) a
+       JOIN users u         ON u.Id  = a.student_id
        LEFT JOIN tbl_batch b  ON b.id  = u.tbl_batch
        LEFT JOIN tbl_phase p  ON p.Id  = u.tbl_phase
-       WHERE ${where}
-       ORDER BY sa.is_correct ASC, sa.datetime DESC`,
-      params,
+       WHERE 1=1 ${userWhere}
+       ORDER BY a.is_correct ASC, a.answered_on DESC`,
+      [question_id, question_id, ...userP],
     );
 
     return res.status(200).json({ success: true, question, data: rows });
