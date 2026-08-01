@@ -5,11 +5,14 @@ async function getActiveNotifies(req, res) {
   const phase_id = req?.user?.Phase || null;
 
   try {
+    // Use CONVERT_TZ to get current IST time regardless of server timezone
+    // Stored datetimes are IST values, so compare against current IST time
     const [rows] = await pool.promise().query(
       `SELECT id, name, college_name, mode, join_datetime
        FROM stud_notify_admin
-       WHERE NOW() BETWEEN feature_datetime_start AND feature_datetime_end
-         AND join_datetime <= NOW()
+       WHERE CONVERT_TZ(NOW(), @@session.time_zone, '+05:30')
+             BETWEEN feature_datetime_start AND feature_datetime_end
+         AND join_datetime <= CONVERT_TZ(NOW(), @@session.time_zone, '+05:30')
          AND (
            (tbl_batch IS NULL AND tbl_phase IS NULL)
            OR (tbl_batch = ? AND tbl_phase IS NULL)

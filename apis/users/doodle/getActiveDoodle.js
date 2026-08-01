@@ -14,7 +14,7 @@ async function getActiveDoodle(req, res) {
        FROM tbl_doodle d
        JOIN tbl_doodle_assigned da ON da.doodle_id = d.id
        WHERE d.is_featured = 1
-         AND NOW() BETWEEN d.start_date AND d.end_date
+         AND CONVERT_TZ(NOW(), @@session.time_zone, '+05:30') BETWEEN d.start_date AND d.end_date
          AND (
            -- All batches (NULL = global)
            (da.tbl_batch IS NULL AND da.tbl_phase IS NULL)
@@ -27,14 +27,14 @@ async function getActiveDoodle(req, res) {
          )
        ORDER BY d.start_date DESC
        LIMIT 1`,
-      [batch_id, phase_id, batch_id, phase_id]
+      [batch_id, phase_id, batch_id, phase_id],
     );
 
     if (rows.length === 0)
       return res.status(200).json({ success: true, data: null });
 
-    const expiry  = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const doodle  = rows[0];
+    const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const doodle = rows[0];
     doodle.image_url = doodle.image_url
       ? generateSignedUrl(`${cf}/${doodle.image_url}`, expiry)
       : null;
