@@ -19,7 +19,7 @@ async function getActiveNotifies(req, res) {
            OR (tbl_batch IS NULL AND tbl_phase = ?)
            OR (tbl_batch = ? AND tbl_phase = ?)
          )
-       ORDER BY feature_datetime_start ASC`,
+       ORDER BY join_datetime DESC`,
       [batch_id, phase_id, batch_id, phase_id],
     );
     return res.status(200).json({ success: true, data: rows });
