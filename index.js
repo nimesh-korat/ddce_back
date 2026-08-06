@@ -51,8 +51,6 @@ const { getActiveTests } = require("./apis/admin/quiz/getActiveTest");
 const { getTestQuestions } = require("./apis/admin/quiz/getTestQuestions");
 const { getResultByStudent } = require("./apis/admin/quiz/getResultByStudent");
 const { getQuizResults } = require("./apis/admin/quiz/getQuizResults");
-const { getQuestionAnalytics }      = require("./apis/admin/questions/getQuestionAnalytics");
-const { getQuestionStudentAnswers } = require("./apis/admin/questions/getQuestionStudentAnswers");
 const {
   getActiveTestsForStudent,
 } = require("./apis/users/quiz/getActiveTestForStudent");
@@ -210,6 +208,12 @@ const {
 } = require("./apis/practice/getWrongPracticeAnswers");
 const { getPracticeAccuracy } = require("./apis/practice/getPracticeAccuracy");
 const { getPracticeStats } = require("./apis/practice/getPracticeStats");
+const {
+  getPracticeQuestionsAdmin,
+} = require("./apis/practice/getPracticeQuestionsAdmin");
+const {
+  getPracticeAttendedList,
+} = require("./apis/practice/getPracticeAttendedList");
 const {
   getStudentPracticeSets,
 } = require("./apis/practice/getStudentPracticeSets");
@@ -409,8 +413,6 @@ app.post("/admin/getAddedQuestionsInTest", checkAuth, getAddedQuestionsInTest);
 app.post("/getTestQuestions", checkAuth, getTestQuestions);
 app.post("/getResultByStudent", checkAuth, getResultByStudent);
 app.get("/admin/quizResults", checkAuth, getQuizResults);
-app.get("/admin/questionAnalytics", checkAuth, getQuestionAnalytics);
-app.get("/admin/questionStudentAnswers/:question_id", checkAuth, getQuestionStudentAnswers);
 app.get(
   "/admin/getUsersWithExamData/:test_id",
   checkAuth,
@@ -501,6 +503,18 @@ app.put(
   checkMentorOrAdmin,
   uploadImg.single("image"),
   updatePractice,
+);
+app.get(
+  "/practice/:practice_id/admin-questions",
+  checkAuth,
+  checkMentorOrAdmin,
+  getPracticeQuestionsAdmin,
+);
+app.get(
+  "/practice/:practice_id/admin-attended",
+  checkAuth,
+  checkMentorOrAdmin,
+  getPracticeAttendedList,
 );
 app.delete("/practice/:id", checkAuth, checkMentorOrAdmin, deletePractice);
 
