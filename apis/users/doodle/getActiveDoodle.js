@@ -10,11 +10,11 @@ async function getActiveDoodle(req, res) {
   try {
     // Find active doodle matching student's batch+phase or all-batch assignment
     const [rows] = await pool.promise().query(
-      `SELECT DISTINCT d.id, d.title, d.image_url
+      `SELECT DISTINCT d.id, d.title, d.image_url, d.start_date
        FROM tbl_doodle d
        JOIN tbl_doodle_assigned da ON da.doodle_id = d.id
        WHERE d.is_featured = 1
-         AND CONVERT_TZ(NOW(), @@session.time_zone, '+05:30') BETWEEN d.start_date AND d.end_date
+         AND NOW() BETWEEN d.start_date AND d.end_date
          AND (
            -- All batches (NULL = global)
            (da.tbl_batch IS NULL AND da.tbl_phase IS NULL)
