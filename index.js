@@ -52,12 +52,6 @@ const { getTestQuestions } = require("./apis/admin/quiz/getTestQuestions");
 const { getResultByStudent } = require("./apis/admin/quiz/getResultByStudent");
 const { getQuizResults } = require("./apis/admin/quiz/getQuizResults");
 const {
-  getQuestionAnalytics,
-} = require("./apis/admin/questions/getQuestionAnalytics");
-const {
-  getQuestionStudentAnswers,
-} = require("./apis/admin/questions/getQuestionStudentAnswers");
-const {
   getActiveTestsForStudent,
 } = require("./apis/users/quiz/getActiveTestForStudent");
 const { AddParagraph } = require("./apis/admin/questions/AddParagraph");
@@ -419,12 +413,6 @@ app.post("/admin/getAddedQuestionsInTest", checkAuth, getAddedQuestionsInTest);
 app.post("/getTestQuestions", checkAuth, getTestQuestions);
 app.post("/getResultByStudent", checkAuth, getResultByStudent);
 app.get("/admin/quizResults", checkAuth, getQuizResults);
-app.get("/admin/questionAnalytics", checkAuth, getQuestionAnalytics);
-app.get(
-  "/admin/questionStudentAnswers/:question_id",
-  checkAuth,
-  getQuestionStudentAnswers,
-);
 app.get(
   "/admin/getUsersWithExamData/:test_id",
   checkAuth,
@@ -582,7 +570,7 @@ app.delete(
 //   togglePracticeVisibility,
 // );
 app.put(
-  "/practice/batch-assign/:id/toggle-featured",
+  "/practice/assignments/:id/toggle-featured",
   checkAuth,
   checkMentorOrAdmin,
   togglePracticeFeatured,

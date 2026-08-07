@@ -76,6 +76,8 @@ async function getStudentPracticeSets(req, res) {
       };
     });
 
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
     const result = sets.map((s) => {
       const counts = countMap[s.batch_assignment_id] || {
         attempted: 0,
@@ -106,30 +108,52 @@ async function getStudentPracticeSets(req, res) {
         progress_pct:
           total > 0 ? Math.round((counts.attempted / total) * 100) : 0,
         last_attempted: counts.last_attempted,
+        is_new:
+          counts.attempted === 0 &&
+          Date.now() -
+            (s.assigned_on instanceof Date
+              ? s.assigned_on.getTime()
+              : new Date(s.assigned_on).getTime()) <=
+            ONE_DAY_MS,
       };
     });
 
     // ── Sort order ───────────────────────────────────────────
-    // 1. Partial (attempted > 0 AND remaining > 0) → by last_attempted DESC
-    // 2. Not started (attempted === 0)             → by assigned_on DESC
-    // 3. Completed (remaining === 0 AND attempted > 0) → last
+    // 0. Newly assigned  (never started AND assigned within last 1 day) → assigned_on DESC
+    // 1. Partial         (attempted > 0 AND remaining > 0)              → last_attempted DESC
+    // 2. Not started     (never started AND assigned > 1 day ago)       → assigned_on DESC
+    // 3. Completed       (remaining === 0 AND attempted > 0)            → last
+
+    const isNewlyAssigned = (r) => {
+      if (r.attempted !== 0) return false;
+      // mysql2 returns datetime columns as JS Date objects
+      const assignedMs =
+        r.assigned_on instanceof Date
+          ? r.assigned_on.getTime()
+          : new Date(r.assigned_on).getTime();
+      return Date.now() - assignedMs <= ONE_DAY_MS;
+    };
+
     const sortGroup = (r) => {
-      if (r.attempted > 0 && r.remaining > 0) return 0; // partial
-      if (r.attempted === 0) return 1; // not started
-      return 2; // completed
+      if (isNewlyAssigned(r)) return 0; // newly assigned
+      if (r.attempted > 0 && r.remaining > 0) return 1; // partial
+      if (r.attempted === 0) return 2; // not started (old)
+      return 3; // completed
     };
 
     result.sort((a, b) => {
       const ga = sortGroup(a),
         gb = sortGroup(b);
       if (ga !== gb) return ga - gb;
-      // Within partial group: last_attempted DESC
-      if (ga === 0) {
+      // Newly assigned & not started: assigned_on DESC
+      if (ga === 0 || ga === 2)
+        return new Date(b.assigned_on || 0) - new Date(a.assigned_on || 0);
+      // Partial: last_attempted DESC
+      if (ga === 1)
         return (
           new Date(b.last_attempted || 0) - new Date(a.last_attempted || 0)
         );
-      }
-      // Within not-started group: assigned_on DESC
+      // Completed: assigned_on DESC
       return new Date(b.assigned_on || 0) - new Date(a.assigned_on || 0);
     });
 
