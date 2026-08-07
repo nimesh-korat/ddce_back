@@ -2,7 +2,7 @@ const pool = require("../../../db/dbConnect");
 const { generateSignedUrl } = require("../../../utils/generateSignedUrl");
 
 async function getUserMaterials(req, res) {
-  const cf       = process.env.AWS_CLOUDFRONT_DOMAIN;
+  const cf = process.env.AWS_CLOUDFRONT_DOMAIN;
   const batch_id = req?.user?.Batch;
   const phase_id = req?.user?.Phase;
 
@@ -20,32 +20,41 @@ async function getUserMaterials(req, res) {
          AND (ma.tbl_phase = ? OR ma.tbl_phase IS NULL)
        LEFT JOIN tbl_subject s ON s.id = m.subject_id
        WHERE m.status = 1 AND m.file_url IS NOT NULL
-       ORDER BY ma.assigned_on DESC`,
-      [batch_id, phase_id]
+       ORDER BY m.added_on DESC`,
+      [batch_id, phase_id],
     );
 
     const expiry = new Date(Date.now() + 4 * 60 * 60 * 1000);
-    const sign   = (p) => p ? generateSignedUrl(`${cf}/${p}`, expiry) : null;
+    const sign = (p) => (p ? generateSignedUrl(`${cf}/${p}`, expiry) : null);
 
-    const data = results.map(m => ({
-      id:            m.id,
-      title:         m.title,
-      description:   m.description,
+    const data = results.map((m) => ({
+      id: m.id,
+      title: m.title,
+      description: m.description,
       material_type: m.material_type,
-      subject_name:  m.Sub_Name,
-      added_on:      m.added_on,
-      material_url:  sign(m.file_url),
+      subject_name: m.Sub_Name,
+      added_on: m.added_on,
+      material_url: sign(m.file_url),
       // solution_available: solution exists AND this batch/phase has solution_visible=1
-      solution_available: m.solution_visible === 1 && !!m.solution_url
-        ? sign(m.solution_url)
-        : null,
+      solution_available:
+        m.solution_visible === 1 && !!m.solution_url
+          ? sign(m.solution_url)
+          : null,
       // No lock icon — if solution not available just hide the button completely
     }));
 
-    return res.status(200).json({ success: true, message: "Materials fetched successfully", data });
+    return res
+      .status(200)
+      .json({ success: true, message: "Materials fetched successfully", data });
   } catch (err) {
     console.error("Error fetching user materials:", err.message);
-    return res.status(500).json({ success: false, message: "Database error", details: err.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Database error",
+        details: err.message,
+      });
   }
 }
 module.exports = { getUserMaterials };
