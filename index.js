@@ -137,6 +137,16 @@ const {
 } = require("./apis/admin/dashboard/getAdminDashboardStats");
 const { addMaterial } = require("./apis/admin/materials/addMaterial");
 const { getMaterials } = require("./apis/admin/materials/getMaterials");
+const {
+  getAdminMaterials,
+} = require("./apis/admin/materials/getAdminMaterials");
+const { assignMaterial } = require("./apis/admin/materials/assignMaterial");
+const {
+  updateMaterialAssignment,
+} = require("./apis/admin/materials/updateMaterialAssignment");
+const {
+  removeMaterialAssignment,
+} = require("./apis/admin/materials/removeMaterialAssignment");
 const { updateMaterial } = require("./apis/admin/materials/updateMaterial");
 const { deleteMaterial } = require("./apis/admin/materials/deleteMaterial");
 const { getUserMaterials } = require("./apis/users/materials/getMaterials");
@@ -602,6 +612,10 @@ app.post(
   addMaterial,
 );
 app.get("/admin/materials", checkAuth, getMaterials);
+app.get("/admin/materials/list", checkAuth, getAdminMaterials);
+app.post("/admin/materials/assign", checkAuth, assignMaterial);
+app.put("/admin/materials/assign/:id", checkAuth, updateMaterialAssignment);
+app.delete("/admin/materials/assign/:id", checkAuth, removeMaterialAssignment);
 app.put(
   "/admin/materials/:id",
   checkAuth,
