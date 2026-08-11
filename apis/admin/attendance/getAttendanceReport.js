@@ -179,7 +179,9 @@ async function getAttendanceReport(req, res) {
         });
 
         const [progRows] = await db.query(
-          `SELECT student_id, practice_assigned_id, COUNT(DISTINCT question_id) AS attempted
+          `SELECT student_id, practice_assigned_id,
+             COUNT(DISTINCT question_id) AS attempted,
+             SUM(CASE WHEN is_correct='1' THEN 1 ELSE 0 END) AS correct
            FROM tbl_practice_answer WHERE student_id IN (${ph})
            GROUP BY student_id, practice_assigned_id`,
           studentIds,
@@ -189,7 +191,12 @@ async function getAttendanceReport(req, res) {
           if (!pId) return;
           const total = totalMap[pId] || 0;
           const key = `${r.student_id}_${pId}`;
-          progressMap[key] = `${r.attempted}/${total}`;
+          // Format: correct/attempted/total
+          progressMap[key] = {
+            correct: r.correct || 0,
+            attempted: r.attempted || 0,
+            total,
+          };
         });
 
         // Store totalMap on each practice entry
@@ -281,8 +288,7 @@ async function getAttendanceReport(req, res) {
       "TOTAL PRESENT",
       "TOTAL ABSENT",
       "ATTENDANCE %",
-      "PRACTICE ATTEMPTED",
-      "PRACTICE TOTAL Qs",
+      "PRACTICE (C/Attempted/Total)",
       "QUIZ SCORE (Obtained/Total)",
     ];
 
@@ -355,6 +361,7 @@ async function getAttendanceReport(req, res) {
       let totalPresent = 0,
         totalAbsent = 0;
       let pracAttempted = 0,
+        pracCorrect = 0,
         pracTotalQ = 0;
       let quizObtained = 0,
         quizTotalMarks = 0;
@@ -401,15 +408,17 @@ async function getAttendanceReport(req, res) {
           const cell = row.getCell(startCol + 1 + i);
           const key = `${s.Id}_${p.practice_id}`;
           const prog = progressMap[key];
-          cell.value = prog || `0/${p.total}`;
+          if (prog) {
+            cell.value = `${prog.correct}C / ${prog.attempted}A / ${prog.total}T`;
+            pracAttempted += prog.attempted;
+            pracCorrect += prog.correct;
+          } else {
+            cell.value = `0C / 0A / ${p.total}T`;
+          }
+          pracTotalQ += p.total || 0;
           cell.alignment = { horizontal: "center", vertical: "middle" };
           cell.font = { color: { argb: "FF6366f1" } };
           setBorder(cell);
-          if (prog) {
-            const [att] = prog.split("/").map(Number);
-            pracAttempted += att || 0;
-          }
-          pracTotalQ += p.total || 0;
         });
 
         (quizMap[d] || []).forEach((q, i) => {
@@ -443,8 +452,7 @@ async function getAttendanceReport(req, res) {
         totalPresent,
         totalAbsent,
         attPct,
-        pracAttempted,
-        pracTotalQ,
+        `${pracCorrect}C / ${pracAttempted}A / ${pracTotalQ}T`,
         quizScore,
       ];
       summaryVals.forEach((v, i) => {
