@@ -52,6 +52,27 @@ const { getTestQuestions } = require("./apis/admin/quiz/getTestQuestions");
 const { getResultByStudent } = require("./apis/admin/quiz/getResultByStudent");
 const { getQuizResults } = require("./apis/admin/quiz/getQuizResults");
 const {
+  getQuestionAnalytics,
+} = require("./apis/admin/questions/getQuestionAnalytics");
+const {
+  getQuestionStudentAnswers,
+} = require("./apis/admin/questions/getQuestionStudentAnswers");
+const {
+  uploadAttendance,
+} = require("./apis/admin/attendance/uploadAttendance");
+const {
+  getAttendanceUploads,
+} = require("./apis/admin/attendance/getAttendanceUploads");
+const {
+  getAttendanceBatch,
+} = require("./apis/admin/attendance/getAttendanceBatch");
+const {
+  deleteAttendanceBatch,
+} = require("./apis/admin/attendance/deleteAttendanceBatch");
+const {
+  getAttendanceReport,
+} = require("./apis/admin/attendance/getAttendanceReport");
+const {
   getActiveTestsForStudent,
 } = require("./apis/users/quiz/getActiveTestForStudent");
 const { AddParagraph } = require("./apis/admin/questions/AddParagraph");
@@ -84,6 +105,9 @@ const {
   GetSubTopicWiseQuestionAnalytics,
 } = require("./apis/users/analytics/getSubTopicWiseQuestionAnalytics");
 const { uploadImg } = require("./middleware/s3MulterConfig");
+const multerMemory = require("multer")({
+  storage: require("multer").memoryStorage(),
+});
 const { GetProfileImage } = require("./apis/users/profile/getProfileImage");
 const {
   GetSubjectWiseAnalysis,
@@ -423,6 +447,26 @@ app.post("/admin/getAddedQuestionsInTest", checkAuth, getAddedQuestionsInTest);
 app.post("/getTestQuestions", checkAuth, getTestQuestions);
 app.post("/getResultByStudent", checkAuth, getResultByStudent);
 app.get("/admin/quizResults", checkAuth, getQuizResults);
+app.get("/admin/questionAnalytics", checkAuth, getQuestionAnalytics);
+app.get(
+  "/admin/questionStudentAnswers/:question_id",
+  checkAuth,
+  getQuestionStudentAnswers,
+);
+app.post(
+  "/admin/attendance/upload",
+  checkAuth,
+  multerMemory.single("csv"),
+  uploadAttendance,
+);
+app.get("/admin/attendance/uploads", checkAuth, getAttendanceUploads);
+app.get("/admin/attendance/report", checkAuth, getAttendanceReport);
+app.get("/admin/attendance/batch/:batch_id", checkAuth, getAttendanceBatch);
+app.delete(
+  "/admin/attendance/batch/:batch_id",
+  checkAuth,
+  deleteAttendanceBatch,
+);
 app.get(
   "/admin/getUsersWithExamData/:test_id",
   checkAuth,
