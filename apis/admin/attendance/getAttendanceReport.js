@@ -191,12 +191,12 @@ async function getAttendanceReport(req, res) {
           if (!pId) return;
           const total = totalMap[pId] || 0;
           const key = `${r.student_id}_${pId}`;
-          // Format: correct/attempted/total
-          progressMap[key] = {
-            correct: r.correct || 0,
-            attempted: r.attempted || 0,
-            total,
-          };
+          if (!progressMap[key]) {
+            progressMap[key] = { correct: 0, attempted: 0, total };
+          }
+          // Accumulate in case student has answers across multiple assignments of same practice
+          progressMap[key].correct += parseInt(r.correct) || 0;
+          progressMap[key].attempted += parseInt(r.attempted) || 0;
         });
 
         // Store totalMap on each practice entry
@@ -409,9 +409,11 @@ async function getAttendanceReport(req, res) {
           const key = `${s.Id}_${p.practice_id}`;
           const prog = progressMap[key];
           if (prog) {
-            cell.value = `${prog.correct}C / ${prog.attempted}A / ${prog.total}T`;
-            pracAttempted += prog.attempted;
-            pracCorrect += prog.correct;
+            const correct = Math.min(prog.correct, prog.total);
+            const attempted = Math.min(prog.attempted, prog.total);
+            cell.value = `${correct}C / ${attempted}A / ${prog.total}T`;
+            pracAttempted += attempted;
+            pracCorrect += correct;
           } else {
             cell.value = `0C / 0A / ${p.total}T`;
           }
