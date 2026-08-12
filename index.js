@@ -73,6 +73,16 @@ const {
   getAttendanceReport,
 } = require("./apis/admin/attendance/getAttendanceReport");
 const {
+  getStudentCounts,
+} = require("./apis/admin/studentCount/getStudentCounts");
+const {
+  upsertStudentCount,
+} = require("./apis/admin/studentCount/upsertStudentCount");
+const {
+  deleteStudentCount,
+} = require("./apis/admin/studentCount/deleteStudentCount");
+const { getStudentCount } = require("./apis/users/dashboard/getStudentCount");
+const {
   getActiveTestsForStudent,
 } = require("./apis/users/quiz/getActiveTestForStudent");
 const { AddParagraph } = require("./apis/admin/questions/AddParagraph");
@@ -467,6 +477,10 @@ app.delete(
   checkAuth,
   deleteAttendanceBatch,
 );
+app.get("/admin/studentCount", checkAuth, getStudentCounts);
+app.post("/admin/studentCount", checkAuth, upsertStudentCount);
+app.delete("/admin/studentCount/:id", checkAuth, deleteStudentCount);
+app.get("/studentCount", checkAuth, getStudentCount);
 app.get(
   "/admin/getUsersWithExamData/:test_id",
   checkAuth,
