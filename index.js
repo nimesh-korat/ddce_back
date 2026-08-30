@@ -115,6 +115,11 @@ const {
   GetSubTopicWiseQuestionAnalytics,
 } = require("./apis/users/analytics/getSubTopicWiseQuestionAnalytics");
 const { uploadImg } = require("./middleware/s3MulterConfig");
+const multer = require("multer");
+const uploadDoubt = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+}); // 10MB for doubts
 const multerMemory = require("multer")({
   storage: require("multer").memoryStorage(),
 });
@@ -788,13 +793,44 @@ app.get("/batchAccess", checkAuth, getMyBatchAccess);
 app.get("/myAnswers", checkAuth, getMyAnswers);
 app.post("/doubt/sendOtp", checkAuth, sendDoubtOtp);
 // Doubt routes
-app.post("/doubt", checkAuth, uploadImg.single("doubt_image"), submitDoubt);
+app.post(
+  "/doubt",
+  checkAuth,
+  (req, res, next) => {
+    uploadDoubt.single("doubt_image")(req, res, (err) => {
+      if (err && err.code === "LIMIT_FILE_SIZE")
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "File too large. Maximum allowed size is 10MB.",
+          });
+      if (err)
+        return res.status(400).json({ success: false, message: err.message });
+      next();
+    });
+  },
+  submitDoubt,
+);
 app.get("/doubt", checkAuth, getMyDoubts);
 app.get("/admin/doubts", checkAuth, getDoubts);
 app.put(
   "/admin/doubts/:id/solve",
   checkAuth,
-  uploadImg.single("answer_image"),
+  (req, res, next) => {
+    uploadDoubt.single("answer_image")(req, res, (err) => {
+      if (err && err.code === "LIMIT_FILE_SIZE")
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "File too large. Maximum allowed size is 10MB.",
+          });
+      if (err)
+        return res.status(400).json({ success: false, message: err.message });
+      next();
+    });
+  },
   solveDoubt,
 );
 app.get("/admin/mentorSubjects", checkAuth, getMentorSubjects);
