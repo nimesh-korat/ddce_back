@@ -279,6 +279,19 @@ const {
 
 const { getMyAnswers } = require("./apis/users/answers/getMyAnswers");
 const { sendDoubtOtp } = require("./apis/users/doubt/sendDoubtOtp");
+const { submitDoubt } = require("./apis/users/doubt/submitDoubt");
+const { getMyDoubts } = require("./apis/users/doubt/getMyDoubts");
+const { getDoubts } = require("./apis/admin/doubts/getDoubts");
+const { solveDoubt } = require("./apis/admin/doubts/solveDoubt");
+const {
+  getMentorSubjects,
+} = require("./apis/admin/mentorSubjects/getMentorSubjects");
+const {
+  assignMentorSubject,
+} = require("./apis/admin/mentorSubjects/assignMentorSubject");
+const {
+  removeMentorSubject,
+} = require("./apis/admin/mentorSubjects/removeMentorSubject");
 const { verifyDoubtOtp } = require("./apis/users/doubt/verifyDoubtOtp");
 const { getBatchAccess } = require("./apis/admin/batchAccess/getBatchAccess");
 const {
@@ -774,6 +787,19 @@ app.put("/admin/batchAccess/:batch_id", checkAuth, updateBatchAccess);
 app.get("/batchAccess", checkAuth, getMyBatchAccess);
 app.get("/myAnswers", checkAuth, getMyAnswers);
 app.post("/doubt/sendOtp", checkAuth, sendDoubtOtp);
+// Doubt routes
+app.post("/doubt", checkAuth, uploadImg.single("doubt_image"), submitDoubt);
+app.get("/doubt", checkAuth, getMyDoubts);
+app.get("/admin/doubts", checkAuth, getDoubts);
+app.put(
+  "/admin/doubts/:id/solve",
+  checkAuth,
+  uploadImg.single("answer_image"),
+  solveDoubt,
+);
+app.get("/admin/mentorSubjects", checkAuth, getMentorSubjects);
+app.post("/admin/mentorSubjects", checkAuth, assignMentorSubject);
+app.delete("/admin/mentorSubjects/:id", checkAuth, removeMentorSubject);
 app.post("/doubt/verifyOtp", checkAuth, verifyDoubtOtp);
 
 app.get("/admin/studentAnswers", checkAuth, getStudentAnswers);
