@@ -273,8 +273,9 @@ const {
 //   togglePracticeVisibility,
 // } = require("./apis/practice/togglePracticeVisibility");
 // const {
-//   editPracticeBatchAssignment,
-// } = require("./apis/practice/editPracticeBatchAssignment");
+const {
+  editPracticeBatchAssignment,
+} = require("./apis/practice/editPracticeBatchAssignment");
 // const {
 //   deletePracticeBatchAssignment,
 // } = require("./apis/practice/deletePracticeBatchAssignment");
@@ -560,6 +561,12 @@ app.delete(
   checkMentorOrAdmin,
   deletePracticeAssignment,
 );
+app.put(
+  "/practice/assignments/:id",
+  checkAuth,
+  checkMentorOrAdmin,
+  editPracticeBatchAssignment,
+);
 app.get(
   "/practice/questions-pool",
   checkAuth,
@@ -636,6 +643,12 @@ app.delete(
   checkAuth,
   checkMentorOrAdmin,
   deletePracticeAssignment,
+);
+app.put(
+  "/practice/assignments/:id",
+  checkAuth,
+  checkMentorOrAdmin,
+  editPracticeBatchAssignment,
 );
 // app.put(
 //   "/practice/batch-assign/:id",
