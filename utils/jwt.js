@@ -16,6 +16,7 @@ const generateToken = (user) => {
     email: user.Email_Id,
     role: user.Role,
     Phone_Number: user.Phone_Number,
+    exam_type_id: user.exam_type_id || null,
   };
 
   const secretKey = process.env.JWT_SECRET_KEY;

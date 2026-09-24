@@ -51,6 +51,44 @@ const { getActiveTests } = require("./apis/admin/quiz/getActiveTest");
 const { getTestQuestions } = require("./apis/admin/quiz/getTestQuestions");
 const { getResultByStudent } = require("./apis/admin/quiz/getResultByStudent");
 const { getQuizResults } = require("./apis/admin/quiz/getQuizResults");
+const { getTopicGroups } = require("./apis/admin/topicGroup/getTopicGroups");
+const {
+  createTopicGroup,
+} = require("./apis/admin/topicGroup/createTopicGroup");
+const {
+  updateTopicGroup,
+} = require("./apis/admin/topicGroup/updateTopicGroup");
+const {
+  deleteTopicGroup,
+} = require("./apis/admin/topicGroup/deleteTopicGroup");
+const {
+  assignTopicToGroup,
+} = require("./apis/admin/topicGroup/assignTopicToGroup");
+const {
+  getExamTypes: adminGetExamTypes,
+} = require("./apis/admin/examType/getExamTypes");
+const { createExamType } = require("./apis/admin/examType/createExamType");
+const { updateExamType } = require("./apis/admin/examType/updateExamType");
+const { deleteExamType } = require("./apis/admin/examType/deleteExamType");
+const {
+  getStudentsForAssign,
+} = require("./apis/admin/examAssign/getStudentsForAssign");
+const {
+  bulkAssignExamType,
+} = require("./apis/admin/examAssign/bulkAssignExamType");
+const { getExamTypes: userGetExamTypes } = require("./apis/users/getExamTypes");
+const {
+  getTopicWeightage,
+} = require("./apis/admin/topicWeightage/getTopicWeightage");
+const {
+  upsertTopicWeightage,
+} = require("./apis/admin/topicWeightage/upsertTopicWeightage");
+const {
+  deleteTopicWeightage,
+} = require("./apis/admin/topicWeightage/deleteTopicWeightage");
+const {
+  getTopicWeightageForStudent,
+} = require("./apis/users/syllabus/getTopicWeightageForStudent");
 const {
   getQuestionAnalytics,
 } = require("./apis/admin/questions/getQuestionAnalytics");
@@ -115,6 +153,10 @@ const {
   GetSubTopicWiseQuestionAnalytics,
 } = require("./apis/users/analytics/getSubTopicWiseQuestionAnalytics");
 const { uploadImg } = require("./middleware/s3MulterConfig");
+const multerForDoubt = require("multer")({
+  storage: require("multer").memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 const multer = require("multer");
 const uploadDoubt = multer({
   storage: multer.memoryStorage(),
@@ -476,6 +518,22 @@ app.post("/admin/getAddedQuestionsInTest", checkAuth, getAddedQuestionsInTest);
 app.post("/getTestQuestions", checkAuth, getTestQuestions);
 app.post("/getResultByStudent", checkAuth, getResultByStudent);
 app.get("/admin/quizResults", checkAuth, getQuizResults);
+app.get("/admin/topicGroups", checkAuth, getTopicGroups);
+app.post("/admin/topicGroups", checkAuth, createTopicGroup);
+app.put("/admin/topicGroups/:id", checkAuth, updateTopicGroup);
+app.delete("/admin/topicGroups/:id", checkAuth, deleteTopicGroup);
+app.post("/admin/topicGroups/assign", checkAuth, assignTopicToGroup);
+app.get("/examTypes", userGetExamTypes);
+app.get("/admin/examTypes", checkAuth, adminGetExamTypes);
+app.post("/admin/examTypes", checkAuth, createExamType);
+app.put("/admin/examTypes/:id", checkAuth, updateExamType);
+app.delete("/admin/examTypes/:id", checkAuth, deleteExamType);
+app.get("/admin/examAssign/students", checkAuth, getStudentsForAssign);
+app.post("/admin/examAssign/bulk", checkAuth, bulkAssignExamType);
+app.get("/admin/topicWeightage/:topic_id", checkAuth, getTopicWeightage);
+app.post("/admin/topicWeightage/:topic_id", checkAuth, upsertTopicWeightage);
+app.delete("/admin/topicWeightage/:id", checkAuth, deleteTopicWeightage);
+app.get("/syllabus/topicWeightage", checkAuth, getTopicWeightageForStudent);
 app.get("/admin/questionAnalytics", checkAuth, getQuestionAnalytics);
 app.get(
   "/admin/questionStudentAnswers/:question_id",
@@ -810,14 +868,12 @@ app.post(
   "/doubt",
   checkAuth,
   (req, res, next) => {
-    uploadDoubt.single("doubt_image")(req, res, (err) => {
+    multerForDoubt.single("doubt_image")(req, res, (err) => {
       if (err && err.code === "LIMIT_FILE_SIZE")
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "File too large. Maximum allowed size is 10MB.",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "File too large. Maximum allowed size is 10MB.",
+        });
       if (err)
         return res.status(400).json({ success: false, message: err.message });
       next();
@@ -831,14 +887,12 @@ app.put(
   "/admin/doubts/:id/solve",
   checkAuth,
   (req, res, next) => {
-    uploadDoubt.single("answer_image")(req, res, (err) => {
+    multerForDoubt.single("answer_image")(req, res, (err) => {
       if (err && err.code === "LIMIT_FILE_SIZE")
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "File too large. Maximum allowed size is 10MB.",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "File too large. Maximum allowed size is 10MB.",
+        });
       if (err)
         return res.status(400).json({ success: false, message: err.message });
       next();

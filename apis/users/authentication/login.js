@@ -50,7 +50,7 @@ async function LoginUser(req, res) {
     await pool.promise().query(
       `UPDATE sessions SET status = 'revoked' 
        WHERE user_id = ? AND status = 'active'`,
-      [user.Id]
+      [user.Id],
     );
 
     // Generate token with embedded tokenId
@@ -87,6 +87,7 @@ async function LoginUser(req, res) {
         DOB: user.DOB,
         Address: user.Address,
         registration_time: user.registration_time,
+        exam_type_id: user.exam_type_id || null,
       },
       auth: {
         token,

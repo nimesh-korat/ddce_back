@@ -1,97 +1,164 @@
 const pool = require("../../db/dbConnect");
 
 async function GetSyllabus(req, res) {
+  const exam_type_id = req?.user?.exam_type_id || null;
+
+  try {
+    // Check what columns/tables exist
+    let hasGroupCol = false,
+      hasWeightageTable = false,
+      hasExamTypeCol = false;
     try {
-        // SQL query to fetch the required data, including the weightage from tbl_subject and tbl_topic
-        const sql = `
-            SELECT 
-                s.Sub_Name AS Subject,
-                s.Weightage AS SubjectWeightage,  -- Fetch weightage from tbl_subject
-                t.topic_name AS Topic,
-                t.weightage AS TopicWeightage,  -- Fetch weightage from tbl_topic
-                st.SubTopicName AS Subtopic,
-                COUNT(q.Id) AS TotalQuestions
-            FROM tbl_subject s
-            LEFT JOIN tbl_topic t ON s.Id = t.tbl_subject
-            LEFT JOIN tbl_subtopic st ON t.Id = st.tbl_topic
-            LEFT JOIN tbl_questions q ON st.Id = q.tbl_subtopic
-            GROUP BY s.Sub_Name, s.weightage, t.topic_name, t.weightage, st.SubTopicName;
-        `;
+      await pool.promise().query("SELECT group_id FROM tbl_topic LIMIT 1");
+      hasGroupCol = true;
+    } catch (e) {}
+    try {
+      await pool.promise().query("SELECT 1 FROM tbl_topic_weightage LIMIT 1");
+      hasWeightageTable = true;
+    } catch (e) {}
+    try {
+      await pool
+        .promise()
+        .query("SELECT exam_type_id FROM tbl_test_type LIMIT 1");
+      hasExamTypeCol = true;
+    } catch (e) {}
 
-        // Execute the query
-        const [results] = await pool.promise().query(sql);
+    console.log(
+      "[Syllabus] exam_type_id:",
+      exam_type_id,
+      "| hasGroupCol:",
+      hasGroupCol,
+      "| hasExamTypeCol:",
+      hasExamTypeCol,
+      "| hasWeightageTable:",
+      hasWeightageTable,
+    );
 
-        if (results.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "No data found.",
-            });
-        }
+    const examFilter =
+      exam_type_id && hasExamTypeCol
+        ? `AND tt.exam_type_id = ${pool.escape(exam_type_id)}`
+        : "";
 
-        // Transform the results into the desired structure with weightages
-        const formattedResults = results.reduce((acc, row) => {
-            // Use parseInt to remove decimal part if weightage is a whole number
-            const subjectWeightage = row.SubjectWeightage % 1 === 0 ? parseInt(row.SubjectWeightage) : row.SubjectWeightage;
-            const topicWeightage = row.TopicWeightage % 1 === 0 ? parseInt(row.TopicWeightage) : row.TopicWeightage;
+    const groupJoin = hasGroupCol
+      ? "LEFT JOIN tbl_topic_group g ON g.id = t.group_id"
+      : "";
+    const groupCols = hasGroupCol
+      ? "g.id AS GroupId, g.name AS GroupName,"
+      : "NULL AS GroupId, NULL AS GroupName,";
+    const groupBy = hasGroupCol ? ", g.id, g.name" : "";
 
-            const subjectIndex = acc.findIndex((s) => s.Subject === row.Subject);
+    const sql = `
+      SELECT
+        s.Id AS SubjectId, s.Sub_Name AS Subject, s.Weightage AS SubjectWeightage,
+        ${groupCols}
+        t.Id AS TopicId, t.topic_name AS Topic, MAX(t.weightage) AS TopicWeightage,
+        st.SubTopicName AS Subtopic, COUNT(q.Id) AS TotalQuestions
+      FROM tbl_subject s
+      JOIN tbl_test_type tt ON tt.Id = s.tbl_test_type
+      LEFT JOIN tbl_topic t ON t.tbl_subject = s.Id
+      ${groupJoin}
+      LEFT JOIN tbl_subtopic st ON st.tbl_topic = t.Id
+      LEFT JOIN tbl_questions q ON q.tbl_subtopic = st.Id
+        AND (q.is_deleted IS NULL OR q.is_deleted = 0)
+      WHERE 1=1 ${examFilter}
+      GROUP BY s.Id, s.Sub_Name, s.Weightage ${groupBy}, t.Id, t.topic_name, st.SubTopicName
+      ORDER BY s.Sub_Name, t.topic_name, st.SubTopicName
+    `;
 
-            if (subjectIndex === -1) {
-                acc.push({
-                    Subject: row.Subject,
-                    SubjectWeightage: subjectWeightage,  // Add formatted subject weightage
-                    Topics: [
-                        {
-                            Topic: row.Topic,
-                            TopicWeightage: topicWeightage,  // Add formatted topic weightage
-                            Subtopics: [
-                                {
-                                    Subtopic: row.Subtopic,
-                                    TotalQuestions: row.TotalQuestions,
-                                },
-                            ],
-                        },
-                    ],
-                });
-            } else {
-                const topicIndex = acc[subjectIndex].Topics.findIndex(
-                    (t) => t.Topic === row.Topic
-                );
-                if (topicIndex === -1) {
-                    acc[subjectIndex].Topics.push({
-                        Topic: row.Topic,
-                        TopicWeightage: topicWeightage,  // Add formatted topic weightage
-                        Subtopics: [
-                            {
-                                Subtopic: row.Subtopic,
-                                TotalQuestions: row.TotalQuestions,
-                            },
-                        ],
-                    });
-                } else {
-                    acc[subjectIndex].Topics[topicIndex].Subtopics.push({
-                        Subtopic: row.Subtopic,
-                        TotalQuestions: row.TotalQuestions,
-                    });
-                }
-            }
-            return acc;
-        }, []);
+    console.log("[Syllabus] examFilter:", examFilter || "(none)");
 
-        // Send the response with the formatted results
-        return res.status(200).json({
-            success: true,
-            data: formattedResults,
+    const [results] = await pool.promise().query(sql);
+
+    console.log("[Syllabus] rows returned:", results.length, "| subjects:", [
+      ...new Set(results.map((r) => r.Subject)),
+    ]);
+
+    if (results.length === 0)
+      return res.status(200).json({ success: true, data: [], exam_type_id });
+
+    // Year weightage for JEE
+    let weightageMap = {};
+    if (exam_type_id && hasWeightageTable) {
+      const topicIds = [
+        ...new Set(results.map((r) => r.TopicId).filter(Boolean)),
+      ];
+      if (topicIds.length > 0) {
+        const [wRows] = await pool
+          .promise()
+          .query(
+            `SELECT topic_id, year, weightage FROM tbl_topic_weightage WHERE topic_id IN (${topicIds.map(() => "?").join(",")}) ORDER BY year ASC`,
+            topicIds,
+          );
+        wRows.forEach((w) => {
+          if (!weightageMap[w.topic_id]) weightageMap[w.topic_id] = [];
+          weightageMap[w.topic_id].push({
+            year: w.year,
+            weightage: parseFloat(w.weightage) || 0,
+          });
         });
-
-    } catch (err) {
-        console.error("Error fetching subjects:", err.message);
-        return res.status(500).json({
-            success: false,
-            message: "Error processing request",
-            details: err.message,
-        });
+      }
     }
-}
 
+    const subjectMap = {};
+    results.forEach((row) => {
+      if (!subjectMap[row.SubjectId]) {
+        subjectMap[row.SubjectId] = {
+          SubjectId: row.SubjectId,
+          Subject: row.Subject,
+          SubjectWeightage: row.SubjectWeightage,
+          Groups: {},
+          Topics: {},
+        };
+      }
+      const subj = subjectMap[row.SubjectId];
+      const addTopic = (container) => {
+        if (!container[row.TopicId]) {
+          container[row.TopicId] = {
+            TopicId: row.TopicId,
+            Topic: row.Topic,
+            TopicWeightage: row.TopicWeightage,
+            YearWeightage: weightageMap[row.TopicId] || [],
+            Subtopics: [],
+          };
+        }
+        if (
+          row.Subtopic &&
+          !container[row.TopicId].Subtopics.find(
+            (s) => s.Subtopic === row.Subtopic,
+          )
+        ) {
+          container[row.TopicId].Subtopics.push({
+            Subtopic: row.Subtopic,
+            TotalQuestions: row.TotalQuestions,
+          });
+        }
+      };
+      if (row.GroupId) {
+        if (!subj.Groups[row.GroupId])
+          subj.Groups[row.GroupId] = {
+            GroupId: row.GroupId,
+            GroupName: row.GroupName,
+            Topics: {},
+          };
+        addTopic(subj.Groups[row.GroupId].Topics);
+      } else {
+        addTopic(subj.Topics);
+      }
+    });
+
+    const data = Object.values(subjectMap).map((s) => ({
+      ...s,
+      Groups: Object.values(s.Groups).map((g) => ({
+        ...g,
+        Topics: Object.values(g.Topics),
+      })),
+      Topics: Object.values(s.Topics),
+    }));
+
+    return res.status(200).json({ success: true, data, exam_type_id });
+  } catch (err) {
+    console.error("[Syllabus] ERROR:", err.message);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
 module.exports = { GetSyllabus };
