@@ -371,6 +371,46 @@ const { deleteNotify } = require("./apis/admin/studNotify/deleteNotify");
 const {
   getActiveNotifies,
 } = require("./apis/users/studNotify/getActiveNotifies");
+
+// ─── Fees Reminder — Admin ────────────────────────────────────────────────
+const {
+  getFeesReminders,
+} = require("./apis/admin/feesReminder/getFeesReminders");
+const {
+  createFeesReminder,
+} = require("./apis/admin/feesReminder/createFeesReminder");
+const {
+  updateFeesReminder,
+} = require("./apis/admin/feesReminder/updateFeesReminder");
+const {
+  deleteFeesReminder,
+} = require("./apis/admin/feesReminder/deleteFeesReminder");
+const {
+  assignFeesReminder,
+} = require("./apis/admin/feesReminder/assignFeesReminder");
+const {
+  getFeesReminderStudents,
+} = require("./apis/admin/feesReminder/getFeesReminderStudents");
+const {
+  markPaidFeesReminder,
+} = require("./apis/admin/feesReminder/markPaidFeesReminder");
+const {
+  bulkMarkPaidFeesReminder,
+} = require("./apis/admin/feesReminder/bulkMarkPaidFeesReminder");
+const {
+  removeFeesAssignment,
+} = require("./apis/admin/feesReminder/removeAssignment");
+const {
+  updateAssignment,
+} = require("./apis/admin/feesReminder/updateAssignment");
+const {
+  bulkUpdateAssignment,
+} = require("./apis/admin/feesReminder/bulkUpdateAssignment");
+// ─── Fees Reminder — Student ──────────────────────────────────────────────
+const {
+  getFeesRemindersForStudent,
+} = require("./apis/users/feesReminder/getFeesRemindersForStudent");
+
 require("dotenv").config();
 
 const app = express();
@@ -927,6 +967,44 @@ app.get("/admin/studNotify", checkAuth, getNotifies);
 app.put("/admin/studNotify/:id", checkAuth, updateNotify);
 app.delete("/admin/studNotify/:id", checkAuth, deleteNotify);
 app.get("/studNotify", checkAuth, getActiveNotifies);
+
+//! FEES REMINDER — Admin
+app.get("/admin/feesReminder", checkAuth, getFeesReminders);
+app.post(
+  "/admin/feesReminder",
+  checkAuth,
+  uploadImg.single("qr_code"),
+  createFeesReminder,
+);
+app.put(
+  "/admin/feesReminder/:id",
+  checkAuth,
+  uploadImg.single("qr_code"),
+  updateFeesReminder,
+);
+app.delete("/admin/feesReminder/:id", checkAuth, deleteFeesReminder);
+app.post("/admin/feesReminder/:id/assign", checkAuth, assignFeesReminder);
+app.get("/admin/feesReminder/:id/students", checkAuth, getFeesReminderStudents);
+app.put("/admin/feesReminder/:id/markPaid", checkAuth, markPaidFeesReminder);
+app.put(
+  "/admin/feesReminder/:id/bulkMarkPaid",
+  checkAuth,
+  bulkMarkPaidFeesReminder,
+);
+app.delete(
+  "/admin/feesReminder/:id/student/:user_id",
+  checkAuth,
+  removeFeesAssignment,
+);
+app.put(
+  "/admin/feesReminder/:id/student/:user_id",
+  checkAuth,
+  updateAssignment,
+);
+app.put("/admin/feesReminder/:id/bulkUpdate", checkAuth, bulkUpdateAssignment);
+
+//! FEES REMINDER — Student
+app.get("/feesReminder", checkAuth, getFeesRemindersForStudent);
 
 //?activate server
 

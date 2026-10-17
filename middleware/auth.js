@@ -1,5 +1,6 @@
 const pool = require("../db/dbConnect");
 const { verifyToken } = require("../utils/jwt");
+const checkFeesLock = require("./feesLock");
 
 // Middleware to check JWT token
 const checkAuth = async (req, res, next) => {
@@ -22,11 +23,11 @@ const checkAuth = async (req, res, next) => {
 
     // Check session in database using only tokenId
     const [session] = await pool.promise().query(
-      `SELECT 1 FROM sessions 
-       WHERE token_id = ? 
-       AND status = 'active' 
+      `SELECT 1 FROM sessions
+       WHERE token_id = ?
+       AND status = 'active'
        AND expires_at > UTC_TIMESTAMP()`,
-      [decoded.tokenId]
+      [decoded.tokenId],
     );
 
     if (!session.length) {
@@ -43,7 +44,9 @@ const checkAuth = async (req, res, next) => {
     }
 
     req.user = decoded;
-    next();
+
+    // Check fees lock for student accounts before proceeding
+    return checkFeesLock(req, res, next);
   } catch (err) {
     console.error("Error during session verification:", err.message);
     return res.status(500).json({
