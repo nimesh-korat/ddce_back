@@ -47,9 +47,6 @@ async function getFeesRemindersForStudent(req, res) {
         : null,
     }));
 
-    console.log(
-      `getFeesRemindersForStudent: user_id=${user_id}, found=${reminders.length} reminders`,
-    );
     res.json({ success: true, data });
   } catch (err) {
     console.error("getFeesRemindersForStudent error:", err.message, err.stack);
