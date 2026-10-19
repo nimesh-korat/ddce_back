@@ -35,7 +35,7 @@ async function updateQuestion(req, res) {
       .promise()
       .query(
         "SELECT answer_text, answer_image, question_marks FROM tbl_questions WHERE id = ? AND is_deleted = 0",
-        [id]
+        [id],
       );
 
     if (oldQuestion.length === 0) {
@@ -59,7 +59,7 @@ async function updateQuestion(req, res) {
           process.env.AWS_BUCKET_NAME,
           fileKey,
           fileBuffer,
-          mimeType
+          mimeType,
         );
         return fileKey;
       }
@@ -115,7 +115,7 @@ async function updateQuestion(req, res) {
       .promise()
       .query(
         `UPDATE tbl_questions SET ${updateFields.join(", ")} WHERE id = ?`,
-        updateValues
+        updateValues,
       );
 
     const new_marks = parseFloat(question_marks);
@@ -135,16 +135,17 @@ async function updateQuestion(req, res) {
         `SELECT id, test_id, student_id, std_answer, is_correct, obt_marks
          FROM tbl_student_answer
          WHERE question_id = ?`,
-        [id]
+        [id],
       );
 
       if (studentAnswers.length > 0) {
         // Get negative marks for each test (may differ per test)
         const testIds = [...new Set(studentAnswers.map((a) => a.test_id))];
-        const [testsData] = await pool.promise().query(
-          `SELECT id, test_neg_marks FROM tbl_test WHERE id IN (?)`,
-          [testIds]
-        );
+        const [testsData] = await pool
+          .promise()
+          .query(`SELECT id, test_neg_marks FROM tbl_test WHERE id IN (?)`, [
+            testIds,
+          ]);
         const testNegMarksMap = {};
         testsData.forEach((t) => {
           testNegMarksMap[t.id] = parseFloat(t.test_neg_marks);
@@ -159,9 +160,8 @@ async function updateQuestion(req, res) {
           const student_answer = sa.std_answer;
 
           // Recalculate new correctness
-          const new_answer_final = answerImageUrl !== undefined
-            ? answerImageUrl
-            : new_answer_text;
+          const new_answer_final =
+            answerImageUrl !== undefined ? answerImageUrl : new_answer_text;
 
           let new_is_correct;
           let new_obt_marks;
@@ -187,17 +187,21 @@ async function updateQuestion(req, res) {
           // Correct/incorrect count deltas
           let correct_delta = 0;
           let incorrect_delta = 0;
-          if (old_is_correct === "1" && new_is_correct !== "1") correct_delta = -1;
-          if (old_is_correct !== "1" && new_is_correct === "1") correct_delta = 1;
-          if (old_is_correct === "0" && new_is_correct !== "0") incorrect_delta = -1;
-          if (old_is_correct !== "0" && new_is_correct === "0") incorrect_delta = 1;
+          if (old_is_correct === "1" && new_is_correct !== "1")
+            correct_delta = -1;
+          if (old_is_correct !== "1" && new_is_correct === "1")
+            correct_delta = 1;
+          if (old_is_correct === "0" && new_is_correct !== "0")
+            incorrect_delta = -1;
+          if (old_is_correct !== "0" && new_is_correct === "0")
+            incorrect_delta = 1;
 
           // Update individual student answer row
           await pool.promise().query(
             `UPDATE tbl_student_answer
              SET is_correct = ?, obt_marks = ?, correct_answer = ?
              WHERE id = ?`,
-            [new_is_correct, new_obt_marks, new_answer_text, sa.id]
+            [new_is_correct, new_obt_marks, new_answer_text, sa.id],
           );
 
           // Accumulate delta for final result update
@@ -231,9 +235,50 @@ async function updateQuestion(req, res) {
               entry.incorrect_delta,
               entry.test_id,
               entry.student_id,
-            ]
+            ],
           );
           students_affected++;
+        }
+      }
+
+      // ── PRACTICE RESULT RECALCULATION ────────────────────────────
+      // Update is_correct in tbl_practice_answer for this question
+      const [practiceAnswers] = await pool.promise().query(
+        `SELECT id, std_answer, is_correct
+         FROM tbl_practice_answer
+         WHERE question_id = ?`,
+        [id],
+      );
+
+      if (practiceAnswers.length > 0) {
+        const new_answer_final =
+          answerImageUrl !== undefined ? answerImageUrl : new_answer_text;
+
+        for (const pa of practiceAnswers) {
+          const old_is_correct = pa.is_correct;
+          const student_answer = pa.std_answer;
+
+          let new_is_correct;
+          if (old_is_correct === "2") {
+            // skipped — stays skipped
+            new_is_correct = "2";
+          } else if (
+            student_answer === new_answer_final ||
+            student_answer === new_answer_text
+          ) {
+            new_is_correct = "1";
+          } else {
+            new_is_correct = "0";
+          }
+
+          if (new_is_correct !== old_is_correct) {
+            await pool.promise().query(
+              `UPDATE tbl_practice_answer
+               SET is_correct = ?, correct_answer = ?
+               WHERE id = ?`,
+              [new_is_correct, new_answer_text, pa.id],
+            );
+          }
         }
       }
     }

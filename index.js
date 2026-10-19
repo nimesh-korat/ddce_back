@@ -233,6 +233,9 @@ const { deleteMaterial } = require("./apis/admin/materials/deleteMaterial");
 const { getUserMaterials } = require("./apis/users/materials/getMaterials");
 const { updateQuestion } = require("./apis/admin/questions/updateQuestion");
 const { deleteQuestion } = require("./apis/admin/questions/deleteQuestion");
+const {
+  previewUpdateQuestion,
+} = require("./apis/admin/questions/previewUpdateQuestion");
 const { updateTest } = require("./apis/admin/quiz/updateTest");
 const { deleteTest } = require("./apis/admin/quiz/deleteTest");
 const { deleteTestQuestion } = require("./apis/admin/quiz/deleteTestQuestion");
@@ -825,7 +828,12 @@ app.get("/materials", checkAuth, getUserMaterials);
 // Admin Dashboard
 app.get("/admin/dashboardStats", checkAuth, getAdminDashboardStats);
 
-// Admin — Questions edit/delete
+// Admin — Questions preview / edit / delete
+app.get(
+  "/admin/questions/:id/preview-update",
+  checkAuth,
+  previewUpdateQuestion,
+);
 app.put(
   "/admin/questions/:id",
   checkAuth,

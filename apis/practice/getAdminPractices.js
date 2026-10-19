@@ -60,6 +60,78 @@ async function getAdminPractices(req, res) {
       prac.batch_assignments = batches;
     }
 
+    // Attach subject / topic / subtopic arrays to each practice for client-side filtering
+    if (practices.length > 0) {
+      const ids = practices.map((p) => p.id);
+      const placeholders = ids.map(() => "?").join(",");
+
+      const [tagRows] = await pool.promise().query(
+        `SELECT
+           pq.practice_id,
+           sub.Id   AS subject_id,   sub.Sub_Name      AS subject_name,
+           t.Id     AS topic_id,     t.Topic_Name      AS topic_name,
+           st.Id    AS subtopic_id,  st.SubTopicName   AS subtopic_name
+         FROM tbl_practice_questions pq
+         JOIN tbl_questions q   ON q.id  = pq.question_id
+         LEFT JOIN tbl_subtopic st  ON st.Id = q.tbl_subtopic
+         LEFT JOIN tbl_topic    t   ON t.Id  = st.tbl_topic
+         LEFT JOIN tbl_subject  sub ON sub.Id = t.tbl_subject
+         WHERE pq.practice_id IN (${placeholders})
+         GROUP BY pq.practice_id, sub.Id, t.Id, st.Id`,
+        ids,
+      );
+
+      // Build maps: practice_id → unique subjects/topics/subtopics
+      const subjectMap = {},
+        topicMap = {},
+        subtopicMap = {};
+      tagRows.forEach(
+        ({
+          practice_id,
+          subject_id,
+          subject_name,
+          topic_id,
+          topic_name,
+          subtopic_id,
+          subtopic_name,
+        }) => {
+          if (!subjectMap[practice_id]) subjectMap[practice_id] = [];
+          if (!topicMap[practice_id]) topicMap[practice_id] = [];
+          if (!subtopicMap[practice_id]) subtopicMap[practice_id] = [];
+
+          if (
+            subject_id &&
+            !subjectMap[practice_id].some((s) => s.id === subject_id)
+          )
+            subjectMap[practice_id].push({
+              id: subject_id,
+              name: subject_name,
+            });
+          if (topic_id && !topicMap[practice_id].some((t) => t.id === topic_id))
+            topicMap[practice_id].push({
+              id: topic_id,
+              name: topic_name,
+              subject_id,
+            });
+          if (
+            subtopic_id &&
+            !subtopicMap[practice_id].some((s) => s.id === subtopic_id)
+          )
+            subtopicMap[practice_id].push({
+              id: subtopic_id,
+              name: subtopic_name,
+              topic_id,
+            });
+        },
+      );
+
+      practices.forEach((p) => {
+        p.subjects = subjectMap[p.id] || [];
+        p.topics = topicMap[p.id] || [];
+        p.subtopics = subtopicMap[p.id] || [];
+      });
+    }
+
     return res.status(200).json({ success: true, data: practices });
   } catch (err) {
     console.error("Error getAdminPractices:", err.message);

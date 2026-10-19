@@ -83,6 +83,7 @@ async function getStudentProfile(req, res) {
     // ── 4. Subject-wise (test) ────────────────────────────────
     const [testSubjects] = await db.query(
       `SELECT
+         sub.Id                                                    AS subject_id,
          sub.Sub_Name                                              AS subject_name,
          COUNT(sa.id)                                             AS attempted,
          SUM(CASE WHEN sa.is_correct='1' THEN 1 ELSE 0 END)      AS correct,
@@ -100,6 +101,7 @@ async function getStudentProfile(req, res) {
     // ── 5. Subject-wise (practice) ────────────────────────────
     const [pracSubjects] = await db.query(
       `SELECT
+         sub.Id                                                    AS subject_id,
          sub.Sub_Name                                              AS subject_name,
          COUNT(pa.id)                                             AS attempted,
          SUM(CASE WHEN pa.is_correct='1' THEN 1 ELSE 0 END)      AS correct,
@@ -111,12 +113,18 @@ async function getStudentProfile(req, res) {
       [student_id],
     );
 
-    // Merge subjects
+    // Merge subjects — key by subject_id so the id is preserved
     const subMap = {};
     [...testSubjects, ...pracSubjects].forEach((s) => {
-      const k = s.subject_name;
+      const k = s.subject_id;
       if (!subMap[k])
-        subMap[k] = { subject_name: k, attempted: 0, correct: 0, incorrect: 0 };
+        subMap[k] = {
+          subject_id: s.subject_id,
+          subject_name: s.subject_name,
+          attempted: 0,
+          correct: 0,
+          incorrect: 0,
+        };
       subMap[k].attempted += parseInt(s.attempted) || 0;
       subMap[k].correct += parseInt(s.correct) || 0;
       subMap[k].incorrect += parseInt(s.incorrect) || 0;
@@ -133,6 +141,149 @@ async function getStudentProfile(req, res) {
 
     const strongest = subjects.length > 0 ? subjects[0] : null;
     const weakest = subjects.length > 1 ? subjects[subjects.length - 1] : null;
+
+    // ── 5b. Topic-wise analysis ───────────────────────────────
+    let topicAnalysis = [];
+    try {
+      const [testTopics] = await db.query(
+        `SELECT
+           sub.Id AS subject_id, sub.Sub_Name AS subject_name,
+           t.Id AS topic_id, t.Topic_Name AS topic_name,
+           COUNT(sa.id) AS attempted,
+           SUM(CASE WHEN sa.is_correct='1' THEN 1 ELSE 0 END) AS correct,
+           SUM(CASE WHEN sa.is_correct='0' THEN 1 ELSE 0 END) AS incorrect
+         FROM tbl_student_answer sa
+         JOIN tbl_questions q ON q.id = sa.question_id
+         JOIN tbl_subtopic st ON st.Id = q.tbl_subtopic
+         JOIN tbl_topic t ON t.Id = st.tbl_topic
+         JOIN tbl_subject sub ON sub.Id = t.tbl_subject
+         WHERE sa.student_id = ? AND sa.is_count = 0
+         GROUP BY sub.Id, sub.Sub_Name, t.Id, t.Topic_Name`,
+        [student_id],
+      );
+      const [pracTopics] = await db.query(
+        `SELECT
+           sub.Id AS subject_id, sub.Sub_Name AS subject_name,
+           t.Id AS topic_id, t.Topic_Name AS topic_name,
+           COUNT(pa.id) AS attempted,
+           SUM(CASE WHEN pa.is_correct='1' THEN 1 ELSE 0 END) AS correct,
+           SUM(CASE WHEN pa.is_correct='0' THEN 1 ELSE 0 END) AS incorrect
+         FROM tbl_practice_answer pa
+         JOIN tbl_questions q ON q.id = pa.question_id
+         JOIN tbl_subtopic st ON st.Id = q.tbl_subtopic
+         JOIN tbl_topic t ON t.Id = st.tbl_topic
+         JOIN tbl_subject sub ON sub.Id = t.tbl_subject
+         WHERE pa.student_id = ? AND pa.is_count = 0
+         GROUP BY sub.Id, sub.Sub_Name, t.Id, t.Topic_Name`,
+        [student_id],
+      );
+      const topicMap = {};
+      [...testTopics, ...pracTopics].forEach((r) => {
+        const k = `${r.subject_id}_${r.topic_id}`;
+        if (!topicMap[k])
+          topicMap[k] = {
+            subject_id: r.subject_id,
+            subject_name: r.subject_name,
+            topic_id: r.topic_id,
+            topic_name: r.topic_name,
+            attempted: 0,
+            correct: 0,
+            incorrect: 0,
+          };
+        topicMap[k].attempted += parseInt(r.attempted) || 0;
+        topicMap[k].correct += parseInt(r.correct) || 0;
+        topicMap[k].incorrect += parseInt(r.incorrect) || 0;
+      });
+      topicAnalysis = Object.values(topicMap)
+        .map((t) => ({
+          ...t,
+          accuracy:
+            t.attempted > 0
+              ? Math.round((t.correct / t.attempted) * 10000) / 100
+              : 0,
+        }))
+        .sort(
+          (a, b) =>
+            a.subject_name.localeCompare(b.subject_name) ||
+            b.accuracy - a.accuracy,
+        );
+    } catch (e) {
+      console.error("Topic analysis error:", e.message);
+    }
+
+    // ── 5c. Subtopic-wise analysis ────────────────────────────
+    let subtopicAnalysis = [];
+    try {
+      const [testSt] = await db.query(
+        `SELECT
+           sub.Id AS subject_id, sub.Sub_Name AS subject_name,
+           t.Id AS topic_id, t.Topic_Name AS topic_name,
+           st.Id AS subtopic_id, st.SubTopicName AS subtopic_name,
+           COUNT(sa.id) AS attempted,
+           SUM(CASE WHEN sa.is_correct='1' THEN 1 ELSE 0 END) AS correct,
+           SUM(CASE WHEN sa.is_correct='0' THEN 1 ELSE 0 END) AS incorrect
+         FROM tbl_student_answer sa
+         JOIN tbl_questions q ON q.id = sa.question_id
+         JOIN tbl_subtopic st ON st.Id = q.tbl_subtopic
+         JOIN tbl_topic t ON t.Id = st.tbl_topic
+         JOIN tbl_subject sub ON sub.Id = t.tbl_subject
+         WHERE sa.student_id = ? AND sa.is_count = 0
+         GROUP BY sub.Id, sub.Sub_Name, t.Id, t.Topic_Name, st.Id, st.SubTopicName`,
+        [student_id],
+      );
+      const [pracSt] = await db.query(
+        `SELECT
+           sub.Id AS subject_id, sub.Sub_Name AS subject_name,
+           t.Id AS topic_id, t.Topic_Name AS topic_name,
+           st.Id AS subtopic_id, st.SubTopicName AS subtopic_name,
+           COUNT(pa.id) AS attempted,
+           SUM(CASE WHEN pa.is_correct='1' THEN 1 ELSE 0 END) AS correct,
+           SUM(CASE WHEN pa.is_correct='0' THEN 1 ELSE 0 END) AS incorrect
+         FROM tbl_practice_answer pa
+         JOIN tbl_questions q ON q.id = pa.question_id
+         JOIN tbl_subtopic st ON st.Id = q.tbl_subtopic
+         JOIN tbl_topic t ON t.Id = st.tbl_topic
+         JOIN tbl_subject sub ON sub.Id = t.tbl_subject
+         WHERE pa.student_id = ? AND pa.is_count = 0
+         GROUP BY sub.Id, sub.Sub_Name, t.Id, t.Topic_Name, st.Id, st.SubTopicName`,
+        [student_id],
+      );
+      const stMap = {};
+      [...testSt, ...pracSt].forEach((r) => {
+        const k = `${r.subject_id}_${r.topic_id}_${r.subtopic_id}`;
+        if (!stMap[k])
+          stMap[k] = {
+            subject_id: r.subject_id,
+            subject_name: r.subject_name,
+            topic_id: r.topic_id,
+            topic_name: r.topic_name,
+            subtopic_id: r.subtopic_id,
+            subtopic_name: r.subtopic_name,
+            attempted: 0,
+            correct: 0,
+            incorrect: 0,
+          };
+        stMap[k].attempted += parseInt(r.attempted) || 0;
+        stMap[k].correct += parseInt(r.correct) || 0;
+        stMap[k].incorrect += parseInt(r.incorrect) || 0;
+      });
+      subtopicAnalysis = Object.values(stMap)
+        .map((s) => ({
+          ...s,
+          accuracy:
+            s.attempted > 0
+              ? Math.round((s.correct / s.attempted) * 10000) / 100
+              : 0,
+        }))
+        .sort(
+          (a, b) =>
+            a.subject_name.localeCompare(b.subject_name) ||
+            a.topic_name.localeCompare(b.topic_name) ||
+            b.accuracy - a.accuracy,
+        );
+    } catch (e) {
+      console.error("Subtopic analysis error:", e.message);
+    }
 
     // ── 6. Quiz results ───────────────────────────────────────
     // tbl_final_result: std_id, test_id, total_correct, total_incorrect,
@@ -318,6 +469,8 @@ async function getStudentProfile(req, res) {
           practice_count: pracResults.length,
         },
         subjects,
+        topics: topicAnalysis,
+        subtopics: subtopicAnalysis,
         strongest,
         weakest,
         quiz_results: quizResults,
