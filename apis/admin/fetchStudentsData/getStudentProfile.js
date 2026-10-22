@@ -449,6 +449,62 @@ async function getStudentProfile(req, res) {
       console.error("Engagement error:", e.message);
     }
 
+    // ── 11. DDCET subject IDs (tbl_test_type = 1 or 2) ──────────
+    let ddcetSubjectIds = [];
+    try {
+      const [ddcetSubjs] = await db.query(
+        `SELECT Id FROM tbl_subject WHERE tbl_test_type IN (1, 2)`,
+      );
+      ddcetSubjectIds = ddcetSubjs.map((s) => s.Id);
+    } catch (e) {
+      console.error("DDCET subject fetch error:", e.message);
+    }
+
+    // ── 12. Total DDCET question count (for attempt-rate calculation) ──
+    let ddcetTotalQuestions = 0;
+    try {
+      const [[qCount]] = await db.query(
+        `SELECT COUNT(q.id) AS cnt
+         FROM tbl_questions q
+         JOIN tbl_subtopic st ON st.Id = q.tbl_subtopic
+         JOIN tbl_topic t     ON t.Id  = st.tbl_topic
+         JOIN tbl_subject sub ON sub.Id = t.tbl_subject
+         WHERE sub.tbl_test_type IN (1, 2) AND q.is_deleted = 0`,
+      );
+      ddcetTotalQuestions = parseInt(qCount.cnt) || 0;
+    } catch (e) {
+      console.error("DDCET question count error:", e.message);
+    }
+
+    // ── 13. Topic weightages for DDCET topics ────────────────────
+    // Fetch the latest year's weightage for each topic under DDCET subjects
+    let topicWeightages = [];
+    try {
+      const [weightRows] = await db.query(
+        `SELECT tw.topic_id, t.Topic_Name AS topic_name,
+                sub.Id AS subject_id, sub.Sub_Name AS subject_name,
+                tw.weightage, tw.year
+         FROM tbl_topic_weightage tw
+         JOIN tbl_topic t   ON t.Id   = tw.topic_id
+         JOIN tbl_subject sub ON sub.Id = t.tbl_subject
+         WHERE sub.tbl_test_type IN (1, 2)
+           AND tw.year = (
+             SELECT MAX(tw2.year) FROM tbl_topic_weightage tw2 WHERE tw2.topic_id = tw.topic_id
+           )
+         ORDER BY sub.Id, tw.topic_id`,
+      );
+      topicWeightages = weightRows.map((r) => ({
+        topic_id: r.topic_id,
+        topic_name: r.topic_name,
+        subject_id: r.subject_id,
+        subject_name: r.subject_name,
+        weightage: parseFloat(r.weightage) || 0,
+        year: r.year,
+      }));
+    } catch (e) {
+      console.error("Topic weightage fetch error:", e.message);
+    }
+
     return res.status(200).json({
       success: true,
       data: {
@@ -478,6 +534,9 @@ async function getStudentProfile(req, res) {
         activity,
         rank: { batch_rank, batch_total },
         engagement: { active_days_30 },
+        ddcetSubjectIds,
+        ddcetTotalQuestions,
+        topicWeightages,
       },
     });
   } catch (err) {
