@@ -16,10 +16,10 @@ async function getNextPracticeQuestion(req, res) {
       .json({ success: false, message: "practice_assigned_id is required" });
 
   try {
-    // Get the practice_id for this batch assignment
+    // Get the practice_id and settings for this batch assignment
     const [assignmentRow] = await pool.promise().query(
-      `SELECT pa.practice_id FROM tbl_practice_assigned pa
-       WHERE pa.id = ? AND pa.is_featured = 1 AND pa.is_featured = 1
+      `SELECT pa.practice_id, pa.is_randomized FROM tbl_practice_assigned pa
+       WHERE pa.id = ? AND pa.is_featured = 1
          AND (pa.start_date IS NULL OR pa.start_date <= NOW())
          AND (pa.end_date   IS NULL OR pa.end_date   >= NOW())`,
       [practice_assigned_id],
@@ -30,6 +30,7 @@ async function getNextPracticeQuestion(req, res) {
         .json({ success: true, data: null, message: "all_completed" });
 
     const practice_id = assignmentRow[0].practice_id;
+    const is_randomized = assignmentRow[0].is_randomized === 1;
 
     const sql = `
       SELECT
@@ -65,7 +66,7 @@ async function getNextPracticeQuestion(req, res) {
             AND ans.question_id          = pq.question_id
             AND ans.student_id           = ?
         )
-      ORDER BY pq.subject_id ASC, pq.question_id ASC
+      ORDER BY ${is_randomized ? "RAND()" : "pq.subject_id ASC, pq.question_id ASC"}
       LIMIT 1
     `;
 

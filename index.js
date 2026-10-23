@@ -314,6 +314,9 @@ const {
 const {
   togglePracticeFeatured,
 } = require("./apis/practice/togglePracticeFeatured");
+const {
+  togglePracticeRandomized,
+} = require("./apis/practice/togglePracticeRandomized");
 // const {
 //   togglePracticeVisibility,
 // } = require("./apis/practice/togglePracticeVisibility");
@@ -774,6 +777,12 @@ app.put(
   checkAuth,
   checkMentorOrAdmin,
   togglePracticeFeatured,
+);
+app.put(
+  "/practice/assignments/:id/toggle-randomized",
+  checkAuth,
+  checkMentorOrAdmin,
+  togglePracticeRandomized,
 );
 // app.post(
 //   "/practice/batch-assign",

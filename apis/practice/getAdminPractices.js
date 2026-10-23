@@ -41,7 +41,7 @@ async function getAdminPractices(req, res) {
            pa.id AS batch_assignment_id,
            pa.tbl_batch, pa.tbl_phase,
            pa.start_date, pa.end_date,
-           pa.is_featured, pa.assigned_on,
+           pa.is_featured, pa.is_randomized, pa.assigned_on,
            b.batch_title,
            ph.title AS phase_title,
            CASE

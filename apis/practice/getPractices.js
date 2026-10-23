@@ -3,15 +3,17 @@ const { generateSignedUrl } = require("../../utils/generateSignedUrl");
 
 async function getPractices(req, res) {
   const user_id = req?.user?.id;
-  const role    = req?.user?.role;
-  if (!user_id) return res.status(401).json({ success: false, message: "Unauthorized" });
+  const role = req?.user?.role;
+  if (!user_id)
+    return res.status(401).json({ success: false, message: "Unauthorized" });
 
   const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
 
   try {
     // Admin sees all; mentor sees own
-    const whereClause = role === 1 ? "p.is_active = 1" : "p.is_active = 1 AND p.added_by = ?";
-    const params      = role === 1 ? [] : [user_id];
+    const whereClause =
+      role === 1 ? "p.is_active = 1" : "p.is_active = 1 AND p.added_by = ?";
+    const params = role === 1 ? [] : [user_id];
 
     const [practices] = await pool.promise().query(
       `SELECT
@@ -25,7 +27,7 @@ async function getPractices(req, res) {
        WHERE ${whereClause}
        GROUP BY p.id
        ORDER BY p.added_on DESC`,
-      params
+      params,
     );
 
     const expiry = new Date(Date.now() + 1000 * 60 * 60 * 24);
@@ -41,7 +43,7 @@ async function getPractices(req, res) {
            pa.id AS batch_assignment_id,
            pa.tbl_batch, pa.tbl_phase,
            pa.start_date, pa.end_date,
-           pa.is_featured, pa.assigned_on,
+           pa.is_featured, pa.is_randomized, pa.assigned_on,
            b.batch_title,
            ph.title AS phase_title,
            CASE
@@ -55,7 +57,7 @@ async function getPractices(req, res) {
          LEFT JOIN tbl_phase ph ON ph.Id = pa.tbl_phase
          WHERE pa.practice_id = ?
          ORDER BY pa.assigned_on DESC`,
-        [prac.id]
+        [prac.id],
       );
       prac.batch_assignments = batches;
     }
